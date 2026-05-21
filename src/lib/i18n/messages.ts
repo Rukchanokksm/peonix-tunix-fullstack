@@ -294,6 +294,17 @@ type Schema = {
     | "nextPage",
     string
   >;
+  search: Record<
+    | "hint"
+    | "loading"
+    | "noResults"
+    | "groupTunes"
+    | "groupUsers"
+    | "groupCars"
+    | "seeAllTunes"
+    | "closeOverlay",
+    string
+  >;
   profileCard: Record<
     | "editBtn"
     | "cancelTitle"
@@ -858,6 +869,17 @@ export const MESSAGES: Record<Locale, Schema> = {
       prevPage: "← Prev",
       nextPage: "Next →",
     },
+    // ─── Search dropdown ─────────────────────────────────────────────────
+    search: {
+      hint: "Type to search tunes, users, cars",
+      loading: "Searching...",
+      noResults: "No matches for",
+      groupTunes: "Tunes",
+      groupUsers: "Users",
+      groupCars: "Cars",
+      seeAllTunes: "See all tunes →",
+      closeOverlay: "Close search",
+    },
     // ─── Profile Card ────────────────────────────────────────────────────
     profileCard: {
       editBtn: "Edit",
@@ -1420,6 +1442,17 @@ export const MESSAGES: Record<Locale, Schema> = {
       browseTunesCta: "ดู Tune ทั้งหมด →",
       prevPage: "← ก่อนหน้า",
       nextPage: "ถัดไป →",
+    },
+    // ─── Search dropdown ─────────────────────────────────────────────────
+    search: {
+      hint: "พิมพ์เพื่อค้นหา tunes, users, cars",
+      loading: "กำลังค้นหา...",
+      noResults: "ไม่พบผลลัพธ์สำหรับ",
+      groupTunes: "Tunes",
+      groupUsers: "Users",
+      groupCars: "Cars",
+      seeAllTunes: "ดู Tunes ทั้งหมด →",
+      closeOverlay: "ปิดการค้นหา",
     },
     // ─── Profile Card ────────────────────────────────────────────────────
     profileCard: {
