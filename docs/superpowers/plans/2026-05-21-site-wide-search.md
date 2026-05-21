@@ -14,21 +14,22 @@
 
 ## File map
 
-| Path | Action | Responsibility |
-|---|---|---|
-| `supabase/migrations/012_search_indexes.sql` | create | Enable `pg_trgm`; add 6 GIN trigram indexes on tunes/user_profiles/cars searchable columns. |
-| `src/lib/useDebounce.ts` | create | Generic `useDebounce<T>(value, ms)` hook. |
-| `src/lib/useDebounce.test.ts` | create | Vitest tests using fake timers. |
-| `src/app/api/search/route.ts` | create | `GET` handler. Validates `q`/`limit`, runs cars+users in parallel, then tunes with `car_id IN (matched ids)` OR text match, returns grouped JSON. Per-query try/catch returns `[]` on failure. |
-| `src/components/search/SearchDropdown.tsx` | create | Client component. Owns dropdown lifecycle (focus, click-outside, Esc), fetches debounced, keyboard nav (↑↓ Enter Esc), renders 3 grouped sections + "See all tunes" footer, responsive overlay at <640px. |
-| `src/lib/i18n/messages.ts` | modify | Add `search` section to `Schema`, `en`, `th`. |
-| `src/components/layout/Navbar.tsx` | modify | Replace `<form onSubmit={handleSearch}>` with a `<div>` that holds the input + mounts `<SearchDropdown />`. Remove `handleSearch` function. |
+| Path                                         | Action | Responsibility                                                                                                                                                                                            |
+| -------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `supabase/migrations/012_search_indexes.sql` | create | Enable `pg_trgm`; add 6 GIN trigram indexes on tunes/user_profiles/cars searchable columns.                                                                                                               |
+| `src/lib/useDebounce.ts`                     | create | Generic `useDebounce<T>(value, ms)` hook.                                                                                                                                                                 |
+| `src/lib/useDebounce.test.ts`                | create | Vitest tests using fake timers.                                                                                                                                                                           |
+| `src/app/api/search/route.ts`                | create | `GET` handler. Validates `q`/`limit`, runs cars+users in parallel, then tunes with `car_id IN (matched ids)` OR text match, returns grouped JSON. Per-query try/catch returns `[]` on failure.            |
+| `src/components/search/SearchDropdown.tsx`   | create | Client component. Owns dropdown lifecycle (focus, click-outside, Esc), fetches debounced, keyboard nav (↑↓ Enter Esc), renders 3 grouped sections + "See all tunes" footer, responsive overlay at <640px. |
+| `src/lib/i18n/messages.ts`                   | modify | Add `search` section to `Schema`, `en`, `th`.                                                                                                                                                             |
+| `src/components/layout/Navbar.tsx`           | modify | Replace `<form onSubmit={handleSearch}>` with a `<div>` that holds the input + mounts `<SearchDropdown />`. Remove `handleSearch` function.                                                               |
 
 ---
 
 ## Task 1: Database migration (apply via Supabase Dashboard)
 
 **Files:**
+
 - Create: `supabase/migrations/012_search_indexes.sql`
 
 - [ ] **Step 1: Create migration file**
@@ -90,6 +91,7 @@ git commit -m "feat(db): add trigram indexes for site-wide search"
 ## Task 2: Add i18n keys
 
 **Files:**
+
 - Modify: `src/lib/i18n/messages.ts`
 
 - [ ] **Step 1: Add `search` to the `Schema` type**
@@ -99,17 +101,17 @@ In `src/lib/i18n/messages.ts`, find the `Schema` type definition and add a `sear
 Add this block to the `Schema` type:
 
 ```ts
-  search: Record<
-    | "hint"
-    | "loading"
-    | "noResults"
-    | "groupTunes"
-    | "groupUsers"
-    | "groupCars"
-    | "seeAllTunes"
-    | "closeOverlay",
-    string
-  >;
+search: Record<
+  | "hint"
+  | "loading"
+  | "noResults"
+  | "groupTunes"
+  | "groupUsers"
+  | "groupCars"
+  | "seeAllTunes"
+  | "closeOverlay",
+  string
+>;
 ```
 
 - [ ] **Step 2: Add `search` translations to `en`**
@@ -163,6 +165,7 @@ git commit -m "feat(i18n): add search dropdown translations"
 ## Task 3: useDebounce hook (TDD)
 
 **Files:**
+
 - Create: `src/lib/useDebounce.ts`
 - Test: `src/lib/useDebounce.test.ts`
 
@@ -300,6 +303,7 @@ git commit -m "feat(lib): add useDebounce hook with tests"
 ## Task 4: Search API route
 
 **Files:**
+
 - Create: `src/app/api/search/route.ts`
 
 - [ ] **Step 1: Create the route file**
@@ -391,9 +395,7 @@ export async function GET(req: NextRequest) {
 
   // Tunes: text match OR car_id IN (matched cars)
   const carIds = cars.map((c) => c.id);
-  const carFilter = carIds.length
-    ? `,car_id.in.(${carIds.join(",")})`
-    : "";
+  const carFilter = carIds.length ? `,car_id.in.(${carIds.join(",")})` : "";
 
   const tunes = await safe<TuneResult>("tunes", async () => {
     const { data, error } = await supabase
@@ -449,6 +451,7 @@ git commit -m "feat(api): add /api/search route for entity search"
 ## Task 5: SearchDropdown component
 
 **Files:**
+
 - Create: `src/components/search/SearchDropdown.tsx`
 
 This task builds the dropdown with: fetch + debounce + AbortController, 3 grouped result sections, empty/loading/no-result states, click navigation, "See all tunes" footer link. Keyboard nav and mobile overlay are added in Tasks 6 and 7.
@@ -619,7 +622,8 @@ export function SearchDropdown({
             textAlign: "center",
           }}
         >
-          {T.noResults} <strong style={{ color: "#f1f5f9" }}>{debounced}</strong>
+          {T.noResults}{" "}
+          <strong style={{ color: "#f1f5f9" }}>{debounced}</strong>
         </div>
       )}
 
@@ -828,6 +832,7 @@ git commit -m "feat(search): add SearchDropdown component"
 ## Task 6: Keyboard navigation
 
 **Files:**
+
 - Modify: `src/components/search/SearchDropdown.tsx`
 
 - [ ] **Step 1: Add a flat-index navigation model**
@@ -835,52 +840,50 @@ git commit -m "feat(search): add SearchDropdown component"
 In `SearchDropdown.tsx`, just above the `return` statement (right after the `function go(...)` declaration), add a flat list of all clickable items and an active-index state:
 
 ```tsx
-  const flatItems: { onClick: () => void }[] = [
-    ...data.tunes.map((tune) => ({
-      onClick: () => go(`/tunes/${tune.id}`),
-    })),
-    ...data.users.map((u) => ({
-      onClick: () => go(`/profile/${u.username}`),
-    })),
-    ...data.cars.map((c) => ({
-      onClick: () =>
-        go(
-          `/games/${c.game?.slug ?? ""}/${encodeURIComponent(c.make)}/${c.id}`,
-        ),
-    })),
-  ];
+const flatItems: { onClick: () => void }[] = [
+  ...data.tunes.map((tune) => ({
+    onClick: () => go(`/tunes/${tune.id}`),
+  })),
+  ...data.users.map((u) => ({
+    onClick: () => go(`/profile/${u.username}`),
+  })),
+  ...data.cars.map((c) => ({
+    onClick: () =>
+      go(`/games/${c.game?.slug ?? ""}/${encodeURIComponent(c.make)}/${c.id}`),
+  })),
+];
 
-  const [activeIdx, setActiveIdx] = useState(0);
+const [activeIdx, setActiveIdx] = useState(0);
 
-  // Reset active index whenever results change
-  useEffect(() => {
-    setActiveIdx(0);
-  }, [data]);
+// Reset active index whenever results change
+useEffect(() => {
+  setActiveIdx(0);
+}, [data]);
 
-  // Keyboard handlers (attach to window while open)
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        onClose();
-        return;
-      }
-      if (flatItems.length === 0) return;
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setActiveIdx((i) => (i + 1) % flatItems.length);
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setActiveIdx((i) => (i - 1 + flatItems.length) % flatItems.length);
-      } else if (e.key === "Enter") {
-        e.preventDefault();
-        flatItems[activeIdx]?.onClick();
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [open, flatItems, activeIdx, onClose]);
+// Keyboard handlers (attach to window while open)
+useEffect(() => {
+  if (!open) return;
+  const handler = (e: KeyboardEvent) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      onClose();
+      return;
+    }
+    if (flatItems.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIdx((i) => (i + 1) % flatItems.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIdx((i) => (i - 1 + flatItems.length) % flatItems.length);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      flatItems[activeIdx]?.onClick();
+    }
+  };
+  window.addEventListener("keydown", handler);
+  return () => window.removeEventListener("keydown", handler);
+}, [open, flatItems, activeIdx, onClose]);
 ```
 
 - [ ] **Step 2: Pass active state to Row**
@@ -888,65 +891,68 @@ In `SearchDropdown.tsx`, just above the `return` statement (right after the `fun
 Update each `Row` rendering inside the three groups. Replace the existing 3 group blocks with these versions that compute a row index and pass `active`:
 
 ```tsx
-          {data.tunes.length > 0 && (
-            <Section title={T.groupTunes}>
-              {data.tunes.map((tune, i) => (
-                <Row
-                  key={tune.id}
-                  active={activeIdx === i}
-                  onClick={() => go(`/tunes/${tune.id}`)}
-                  primary={tune.title}
-                  secondary={
-                    tune.car
-                      ? `${tune.car.make} ${tune.car.model} · ${tune.car.pi_class}`
-                      : tune.discipline
-                  }
-                  badge={tune.game?.slug
-                    ?.replace("forza-horizon-", "FH")
-                    .replace("the-crew-motorfest", "TCM")
-                    .replace("nfs-unbound", "NFS")
-                    .toUpperCase()}
-                />
-              ))}
-            </Section>
-          )}
+{
+  data.tunes.length > 0 && (
+    <Section title={T.groupTunes}>
+      {data.tunes.map((tune, i) => (
+        <Row
+          key={tune.id}
+          active={activeIdx === i}
+          onClick={() => go(`/tunes/${tune.id}`)}
+          primary={tune.title}
+          secondary={
+            tune.car
+              ? `${tune.car.make} ${tune.car.model} · ${tune.car.pi_class}`
+              : tune.discipline
+          }
+          badge={tune.game?.slug
+            ?.replace("forza-horizon-", "FH")
+            .replace("the-crew-motorfest", "TCM")
+            .replace("nfs-unbound", "NFS")
+            .toUpperCase()}
+        />
+      ))}
+    </Section>
+  );
+}
 
-          {data.users.length > 0 && (
-            <Section title={T.groupUsers}>
-              {data.users.map((u, i) => (
-                <Row
-                  key={u.id}
-                  active={activeIdx === data.tunes.length + i}
-                  onClick={() => go(`/profile/${u.username}`)}
-                  primary={u.username}
-                  secondary="User"
-                />
-              ))}
-            </Section>
-          )}
+{
+  data.users.length > 0 && (
+    <Section title={T.groupUsers}>
+      {data.users.map((u, i) => (
+        <Row
+          key={u.id}
+          active={activeIdx === data.tunes.length + i}
+          onClick={() => go(`/profile/${u.username}`)}
+          primary={u.username}
+          secondary="User"
+        />
+      ))}
+    </Section>
+  );
+}
 
-          {data.cars.length > 0 && (
-            <Section title={T.groupCars}>
-              {data.cars.map((c, i) => (
-                <Row
-                  key={c.id}
-                  active={
-                    activeIdx ===
-                    data.tunes.length + data.users.length + i
-                  }
-                  onClick={() =>
-                    go(
-                      `/games/${c.game?.slug ?? ""}/${encodeURIComponent(
-                        c.make,
-                      )}/${c.id}`,
-                    )
-                  }
-                  primary={`${c.make} ${c.model}`}
-                  secondary={`${c.year} · ${c.pi_class}`}
-                />
-              ))}
-            </Section>
-          )}
+{
+  data.cars.length > 0 && (
+    <Section title={T.groupCars}>
+      {data.cars.map((c, i) => (
+        <Row
+          key={c.id}
+          active={activeIdx === data.tunes.length + data.users.length + i}
+          onClick={() =>
+            go(
+              `/games/${c.game?.slug ?? ""}/${encodeURIComponent(
+                c.make,
+              )}/${c.id}`,
+            )
+          }
+          primary={`${c.make} ${c.model}`}
+          secondary={`${c.year} · ${c.pi_class}`}
+        />
+      ))}
+    </Section>
+  );
+}
 ```
 
 - [ ] **Step 3: Update `Row` to use `active`**
@@ -1059,6 +1065,7 @@ git commit -m "feat(search): add keyboard navigation to SearchDropdown"
 ## Task 7: Mobile overlay
 
 **Files:**
+
 - Modify: `src/components/search/SearchDropdown.tsx`
 
 - [ ] **Step 1: Add a viewport-width hook inside the file**
@@ -1084,7 +1091,7 @@ function useIsMobile() {
 Inside `SearchDropdown`, near the other hook calls (debounced, data, loading), add:
 
 ```tsx
-  const isMobile = useIsMobile();
+const isMobile = useIsMobile();
 ```
 
 Replace the existing top-level `<div ref={containerRef} style={{ position: "absolute", ... }}>` with a conditional style. Find the existing return:
@@ -1175,6 +1182,7 @@ git commit -m "feat(search): add mobile overlay layout for SearchDropdown"
 ## Task 8: Wire SearchDropdown into Navbar
 
 **Files:**
+
 - Modify: `src/components/layout/Navbar.tsx`
 
 The Navbar currently has (line numbers approximate, refer to the file):
@@ -1184,6 +1192,7 @@ The Navbar currently has (line numbers approximate, refer to the file):
 - Lines 301–348: `<form onSubmit={handleSearch}>` wrapping the input and a submit button with `<SearchIcon />`.
 
 We will:
+
 1. Add an `open` state for the dropdown.
 2. Replace the `<form>` with a `<div style={{ position: 'relative', ... }}>`.
 3. Render `<SearchDropdown query={searchQuery} open={open} onClose={...} />` inside.
@@ -1201,8 +1210,8 @@ import { SearchDropdown } from "@/components/search/SearchDropdown";
 Find the existing `searchQuery` state (around line 87) and add a new line below it:
 
 ```tsx
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchOpen, setSearchOpen] = useState(false);
+const [searchQuery, setSearchQuery] = useState("");
+const [searchOpen, setSearchOpen] = useState(false);
 ```
 
 - [ ] **Step 2: Remove `handleSearch`**
@@ -1210,14 +1219,14 @@ Find the existing `searchQuery` state (around line 87) and add a new line below 
 Delete the entire `handleSearch` function (around lines 129–135 — the comment block `// ── Search ──` and the function definition):
 
 ```tsx
-  // ── Search ──────────────────────────────────────────────────────────────
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/tunes?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-    }
-  };
+// ── Search ──────────────────────────────────────────────────────────────
+const handleSearch = (e: React.FormEvent) => {
+  e.preventDefault();
+  if (searchQuery.trim()) {
+    router.push(`/tunes?search=${encodeURIComponent(searchQuery.trim())}`);
+    setSearchQuery("");
+  }
+};
 ```
 
 - [ ] **Step 3: Replace the form with the new layout**
@@ -1247,63 +1256,64 @@ Find the existing search block (around lines 300–348):
 Replace with:
 
 ```tsx
-        {/* ── CENTER: Search ── */}
-        <div style={{ position: "relative", width: "320px" }}>
-          <input
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              if (!searchOpen) setSearchOpen(true);
-            }}
-            onFocus={(e) => {
-              setSearchOpen(true);
-              (e.target as HTMLElement).style.borderColor =
-                "rgba(250,204,21,0.5)";
-            }}
-            onBlur={(e) => {
-              (e.target as HTMLElement).style.borderColor =
-                "rgba(255,255,255,0.1)";
-            }}
-            placeholder={t.nav.search}
-            style={{
-              width: "100%",
-              background: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "8px",
-              padding: "7px 36px 7px 12px",
-              color: "#e2e8f0",
-              fontSize: "13px",
-              outline: "none",
-              boxSizing: "border-box",
-              transition: "border-color 0.15s",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              right: "10px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              color: "#64748b",
-              display: "flex",
-              alignItems: "center",
-              pointerEvents: "none",
-            }}
-          >
-            <SearchIcon />
-          </div>
-          <SearchDropdown
-            query={searchQuery}
-            open={searchOpen}
-            onClose={() => {
-              setSearchOpen(false);
-              setSearchQuery("");
-            }}
-          />
-        </div>
+{
+  /* ── CENTER: Search ── */
+}
+<div style={{ position: "relative", width: "320px" }}>
+  <input
+    value={searchQuery}
+    onChange={(e) => {
+      setSearchQuery(e.target.value);
+      if (!searchOpen) setSearchOpen(true);
+    }}
+    onFocus={(e) => {
+      setSearchOpen(true);
+      (e.target as HTMLElement).style.borderColor = "rgba(250,204,21,0.5)";
+    }}
+    onBlur={(e) => {
+      (e.target as HTMLElement).style.borderColor = "rgba(255,255,255,0.1)";
+    }}
+    placeholder={t.nav.search}
+    style={{
+      width: "100%",
+      background: "rgba(255,255,255,0.06)",
+      border: "1px solid rgba(255,255,255,0.1)",
+      borderRadius: "8px",
+      padding: "7px 36px 7px 12px",
+      color: "#e2e8f0",
+      fontSize: "13px",
+      outline: "none",
+      boxSizing: "border-box",
+      transition: "border-color 0.15s",
+    }}
+  />
+  <div
+    style={{
+      position: "absolute",
+      right: "10px",
+      top: "50%",
+      transform: "translateY(-50%)",
+      color: "#64748b",
+      display: "flex",
+      alignItems: "center",
+      pointerEvents: "none",
+    }}
+  >
+    <SearchIcon />
+  </div>
+  <SearchDropdown
+    query={searchQuery}
+    open={searchOpen}
+    onClose={() => {
+      setSearchOpen(false);
+      setSearchQuery("");
+    }}
+  />
+</div>;
 ```
 
 Notes:
+
 - The `<button type="submit">` becomes a non-interactive icon (`pointerEvents: 'none'`) since there is no form to submit. The dropdown's "See all tunes" footer provides the same affordance.
 - Resetting `searchQuery` to "" on close mimics the old behavior.
 

@@ -130,16 +130,16 @@ Applied via the existing flow ([guideline_blog memory](../../../C:/Users/pepoi/.
 
 ### UX states
 
-| State | Behavior |
-|---|---|
-| Input empty, not focused | Show input only (current behavior). |
-| Input empty, focused | Show dropdown with hint "Search tunes, users, cars". No DB call. |
-| Typing, < 2 chars | Keep hint visible. No DB call. |
-| Typing, ≥ 2 chars | Show loading spinner row while in-flight. Debounced 200ms. |
-| Has results | 3 grouped sections (skip empty groups). Each row: avatar/badge + label + secondary text. Footer link "See all tunes matching <q> →". |
-| Zero results | "No matches for **q**." (no suggestions in v1). |
-| API error | Empty state + console warn. No toast (keep search non-intrusive). |
-| Esc / click outside / select result | Close dropdown. |
+| State                               | Behavior                                                                                                                             |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Input empty, not focused            | Show input only (current behavior).                                                                                                  |
+| Input empty, focused                | Show dropdown with hint "Search tunes, users, cars". No DB call.                                                                     |
+| Typing, < 2 chars                   | Keep hint visible. No DB call.                                                                                                       |
+| Typing, ≥ 2 chars                   | Show loading spinner row while in-flight. Debounced 200ms.                                                                           |
+| Has results                         | 3 grouped sections (skip empty groups). Each row: avatar/badge + label + secondary text. Footer link "See all tunes matching <q> →". |
+| Zero results                        | "No matches for **q**." (no suggestions in v1).                                                                                      |
+| API error                           | Empty state + console warn. No toast (keep search non-intrusive).                                                                    |
+| Esc / click outside / select result | Close dropdown.                                                                                                                      |
 
 ### Keyboard navigation
 
@@ -173,14 +173,14 @@ Per [project-patterns](../../../C:/Users/pepoi/.claude/projects/E--my-code-phoen
 
 ## Components
 
-| Path | Type | Responsibility |
-|---|---|---|
-| `supabase/migrations/012_search_indexes.sql` | new | Enable pg_trgm + 6 GIN indexes. |
-| `src/app/api/search/route.ts` | new | `GET` handler: parse `q`/`limit`, run 3 queries in parallel, return grouped JSON. |
-| `src/components/search/SearchDropdown.tsx` | new | Client component. Owns dropdown UI, focus state, keyboard nav, fetches `/api/search`, renders grouped results. |
-| `src/lib/useDebounce.ts` | new | Tiny hook (`useDebounce(value, ms)`). |
-| `src/components/layout/Navbar.tsx` | modified | Replace the current "Enter → /tunes?search=" handler with mounting `<SearchDropdown />` anchored to the input. Keep the input itself; the dropdown reads from it. |
-| `src/lib/i18n/messages.ts` | modified | Add `search` section in `en` and `th`. |
+| Path                                         | Type     | Responsibility                                                                                                                                                    |
+| -------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `supabase/migrations/012_search_indexes.sql` | new      | Enable pg_trgm + 6 GIN indexes.                                                                                                                                   |
+| `src/app/api/search/route.ts`                | new      | `GET` handler: parse `q`/`limit`, run 3 queries in parallel, return grouped JSON.                                                                                 |
+| `src/components/search/SearchDropdown.tsx`   | new      | Client component. Owns dropdown UI, focus state, keyboard nav, fetches `/api/search`, renders grouped results.                                                    |
+| `src/lib/useDebounce.ts`                     | new      | Tiny hook (`useDebounce(value, ms)`).                                                                                                                             |
+| `src/components/layout/Navbar.tsx`           | modified | Replace the current "Enter → /tunes?search=" handler with mounting `<SearchDropdown />` anchored to the input. Keep the input itself; the dropdown reads from it. |
+| `src/lib/i18n/messages.ts`                   | modified | Add `search` section in `en` and `th`.                                                                                                                            |
 
 ## Error handling
 
