@@ -33,7 +33,7 @@ Explicitly out of scope for v1 (revisit later if engagement data justifies it):
 
 ### Tech choice
 
-Postgres `pg_trgm` extension with GIN trigram indexes, queried via `ILIKE '%q%'` and ranked by `similarity()`. Rationale:
+Postgres `pg_trgm` extension with GIN trigram indexes, queried via `ILIKE '%q%'`. The trigram index accelerates wildcard ILIKE on large columns. Rationale:
 
 - Tunix's dataset is small (community-scale, not millions of rows). Trigram is well within Postgres's comfort zone here.
 - `ILIKE` handles UTF-8 (including Thai) without needing a tokenizer — Supabase's default Postgres has no Thai dictionary for `tsvector`, so full-text would degrade on Thai inputs.
@@ -95,9 +95,13 @@ GET /api/search?q=<string>&limit=<number, default 5>
 
 ### Ranking
 
-- **Tunes:** `similarity(title, q) DESC, upvotes DESC`. The car-match join uses `OR cars.make ILIKE %q% OR cars.model ILIKE %q%` so typing "supra" finds tunes for a Supra even when the tune title says "MK4 build".
-- **Users:** `similarity(username, q) DESC, tune_count DESC`.
-- **Cars:** `similarity(make || ' ' || model, q) DESC, make ASC`.
+Supabase REST API doesn't support custom `ORDER BY similarity(...)` expressions without an RPC function. For v1 we use ILIKE matching + a standard column sort. Trigram index still accelerates the ILIKE. If ranking quality feels off later, promote to an RPC.
+
+- **Tunes:** matches on `title ILIKE %q% OR description ILIKE %q% OR car_id IN (cars-matching-q)` — the car-match enables "type 'supra' → find Supra tunes even if title says 'MK4 build'". Order: `upvotes DESC`.
+- **Users:** matches on `username ILIKE %q% OR bio ILIKE %q%`. Order: `username ASC`.
+- **Cars:** matches on `make ILIKE %q% OR model ILIKE %q%`. Order: `make ASC, model ASC`.
+
+The cars query resolves first so its results feed the tunes `car_id IN (...)` filter. Cars and users can run in parallel; tunes runs after cars completes.
 
 ### Database migration
 
@@ -187,7 +191,7 @@ Per [project-patterns](../../../C:/Users/pepoi/.claude/projects/E--my-code-phoen
 
 ## Testing
 
-- **Unit (vitest):** test `useDebounce` (timer behavior). Test a small helper that builds the grouped-results array (sort + cap-per-group).
+- **Unit (vitest):** test `useDebounce` (timer behavior). The API has no JS-side sorting/capping logic to unit-test (the DB does it all).
 - **Manual:** EN query (`supra`), TH query (`สึปรา` or any Thai input), partial match (`sup`), no-match (`xyzzy`), and keyboard nav (↑↓ Enter Esc). Check mobile overlay at viewport <640px.
 - **Skip:** route integration tests against Supabase. Vitest scope per [project-tooling](../../../C:/Users/pepoi/.claude/projects/E--my-code-phoenixtune/memory/project_tooling.md) is node-only, no DB instance.
 
