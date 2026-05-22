@@ -53,6 +53,7 @@ export function SearchDropdown({
   const debounced = useDebounce(query.trim(), 200);
   const [data, setData] = useState<SearchResponse>(EMPTY);
   const [loading, setLoading] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Fetch when debounced query changes
@@ -60,6 +61,7 @@ export function SearchDropdown({
     if (debounced.length < 2) {
       setData(EMPTY);
       setLoading(false);
+      setActiveIdx(0);
       return;
     }
     const ac = new AbortController();
@@ -71,12 +73,14 @@ export function SearchDropdown({
       .then((json: SearchResponse) => {
         setData(json);
         setLoading(false);
+        setActiveIdx(0);
       })
       .catch((e) => {
         if (e.name !== "AbortError") {
           console.warn("[search] fetch failed", e);
           setData(EMPTY);
           setLoading(false);
+          setActiveIdx(0);
         }
       });
     return () => ac.abort();
@@ -96,6 +100,45 @@ export function SearchDropdown({
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [open, onClose]);
+
+  // Keyboard navigation (Esc/Arrow/Enter) while open
+  useEffect(() => {
+    if (!open) return;
+    const navigate = (href: string) => {
+      onClose();
+      router.push(href);
+    };
+    const items: Array<() => void> = [
+      ...data.tunes.map((tune) => () => navigate(`/tunes/${tune.id}`)),
+      ...data.users.map((u) => () => navigate(`/profile/${u.username}`)),
+      ...data.cars.map(
+        (c) => () =>
+          navigate(
+            `/games/${c.game?.slug ?? ""}/${encodeURIComponent(c.make)}/${c.id}`,
+          ),
+      ),
+    ];
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (items.length === 0) return;
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setActiveIdx((i) => (i + 1) % items.length);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setActiveIdx((i) => (i - 1 + items.length) % items.length);
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        items[activeIdx]?.();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [open, data, activeIdx, onClose, router]);
 
   if (!open) return null;
 
@@ -168,9 +211,10 @@ export function SearchDropdown({
         <div style={{ maxHeight: "60vh", overflowY: "auto" }}>
           {data.tunes.length > 0 && (
             <Section title={T.groupTunes}>
-              {data.tunes.map((tune) => (
+              {data.tunes.map((tune, i) => (
                 <Row
                   key={tune.id}
+                  active={activeIdx === i}
                   onClick={() => go(`/tunes/${tune.id}`)}
                   primary={tune.title}
                   secondary={
@@ -190,9 +234,10 @@ export function SearchDropdown({
 
           {data.users.length > 0 && (
             <Section title={T.groupUsers}>
-              {data.users.map((u) => (
+              {data.users.map((u, i) => (
                 <Row
                   key={u.id}
+                  active={activeIdx === data.tunes.length + i}
                   onClick={() => go(`/profile/${u.username}`)}
                   primary={u.username}
                   secondary="User"
@@ -203,9 +248,12 @@ export function SearchDropdown({
 
           {data.cars.length > 0 && (
             <Section title={T.groupCars}>
-              {data.cars.map((c) => (
+              {data.cars.map((c, i) => (
                 <Row
                   key={c.id}
+                  active={
+                    activeIdx === data.tunes.length + data.users.length + i
+                  }
                   onClick={() =>
                     go(
                       `/games/${c.game?.slug ?? ""}/${encodeURIComponent(
@@ -273,11 +321,13 @@ function Row({
   secondary,
   badge,
   onClick,
+  active,
 }: {
   primary: string;
   secondary?: string;
   badge?: string;
   onClick: () => void;
+  active: boolean;
 }) {
   return (
     <button
@@ -288,7 +338,7 @@ function Row({
         alignItems: "center",
         gap: "10px",
         padding: "8px 14px",
-        background: "transparent",
+        background: active ? "rgba(255,255,255,0.06)" : "transparent",
         border: "none",
         cursor: "pointer",
         textAlign: "left",
@@ -296,10 +346,12 @@ function Row({
       }}
       onMouseEnter={(e) =>
         ((e.currentTarget as HTMLElement).style.background =
-          "rgba(255,255,255,0.04)")
+          "rgba(255,255,255,0.06)")
       }
       onMouseLeave={(e) =>
-        ((e.currentTarget as HTMLElement).style.background = "transparent")
+        ((e.currentTarget as HTMLElement).style.background = active
+          ? "rgba(255,255,255,0.06)"
+          : "transparent")
       }
     >
       <div style={{ flex: 1, minWidth: 0 }}>
