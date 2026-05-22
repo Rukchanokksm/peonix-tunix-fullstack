@@ -38,6 +38,18 @@ type SearchResponse = {
 
 const EMPTY: SearchResponse = { tunes: [], users: [], cars: [] };
 
+function useIsMobile() {
+  const [mobile, setMobile] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 640px)");
+    const update = () => setMobile(mql.matches);
+    update();
+    mql.addEventListener("change", update);
+    return () => mql.removeEventListener("change", update);
+  }, []);
+  return mobile;
+}
+
 export function SearchDropdown({
   query,
   open,
@@ -54,6 +66,7 @@ export function SearchDropdown({
   const [data, setData] = useState<SearchResponse>(EMPTY);
   const [loading, setLoading] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
+  const isMobile = useIsMobile();
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Fetch when debounced query changes
@@ -154,19 +167,53 @@ export function SearchDropdown({
   return (
     <div
       ref={containerRef}
-      style={{
-        position: "absolute",
-        top: "calc(100% + 6px)",
-        left: 0,
-        right: 0,
-        background: "#13151c",
-        border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: "10px",
-        boxShadow: "0 12px 32px rgba(0,0,0,0.4)",
-        zIndex: 50,
-        overflow: "hidden",
-      }}
+      style={
+        isMobile
+          ? {
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "#0d0f14",
+              zIndex: 100,
+              overflowY: "auto",
+              padding: "12px",
+            }
+          : {
+              position: "absolute",
+              top: "calc(100% + 6px)",
+              left: 0,
+              right: 0,
+              background: "#13151c",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: "10px",
+              boxShadow: "0 12px 32px rgba(0,0,0,0.4)",
+              zIndex: 50,
+              overflow: "hidden",
+            }
+      }
     >
+      {isMobile && (
+        <button
+          onClick={onClose}
+          aria-label={T.closeOverlay}
+          style={{
+            display: "block",
+            marginLeft: "auto",
+            marginBottom: "8px",
+            background: "rgba(255,255,255,0.06)",
+            border: "none",
+            color: "#94a3b8",
+            padding: "6px 12px",
+            borderRadius: "6px",
+            fontSize: "12px",
+            cursor: "pointer",
+          }}
+        >
+          ✕
+        </button>
+      )}
       {showHint && (
         <div
           style={{
