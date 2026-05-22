@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { PREMIUM_ENABLED } from "@/lib/premium";
+import { SearchDropdown } from "@/components/search/SearchDropdown";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import tunixLogo from "@/app/tunix_wall.png";
 import type { UserProfile } from "@/types";
@@ -85,6 +86,7 @@ export function Navbar() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [gamesOpen, setGamesOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -125,15 +127,6 @@ export function Navbar() {
     document.addEventListener("mousedown", handle);
     return () => document.removeEventListener("mousedown", handle);
   }, []);
-
-  // ── Search ──────────────────────────────────────────────────────────────
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/tunes?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery("");
-    }
-  };
 
   // ── Sign out ────────────────────────────────────────────────────────────
   const handleSignOut = async () => {
@@ -298,13 +291,22 @@ export function Navbar() {
         </div>
 
         {/* ── CENTER: Search ── */}
-        <form
-          onSubmit={handleSearch}
-          style={{ position: "relative", width: "320px" }}
-        >
+        <div style={{ position: "relative", width: "320px" }}>
           <input
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              if (!searchOpen) setSearchOpen(true);
+            }}
+            onFocus={(e) => {
+              setSearchOpen(true);
+              (e.target as HTMLElement).style.borderColor =
+                "rgba(250,204,21,0.5)";
+            }}
+            onBlur={(e) => {
+              (e.target as HTMLElement).style.borderColor =
+                "rgba(255,255,255,0.1)";
+            }}
             placeholder={t.nav.search}
             style={{
               width: "100%",
@@ -318,34 +320,30 @@ export function Navbar() {
               boxSizing: "border-box",
               transition: "border-color 0.15s",
             }}
-            onFocus={(e) => {
-              (e.target as HTMLElement).style.borderColor =
-                "rgba(250,204,21,0.5)";
-            }}
-            onBlur={(e) => {
-              (e.target as HTMLElement).style.borderColor =
-                "rgba(255,255,255,0.1)";
-            }}
           />
-          <button
-            type="submit"
+          <div
             style={{
               position: "absolute",
               right: "10px",
               top: "50%",
               transform: "translateY(-50%)",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
               color: "#64748b",
               display: "flex",
               alignItems: "center",
-              padding: 0,
+              pointerEvents: "none",
             }}
           >
             <SearchIcon />
-          </button>
-        </form>
+          </div>
+          <SearchDropdown
+            query={searchQuery}
+            open={searchOpen}
+            onClose={() => {
+              setSearchOpen(false);
+              setSearchQuery("");
+            }}
+          />
+        </div>
 
         {/* ── RIGHT: Lang switcher + Auth ── */}
         <div
