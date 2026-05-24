@@ -297,7 +297,7 @@ export default function CalculatorPage() {
     drivetrain: "RWD",
     discipline: "track",
     weightKg: 1400,
-    powerKw: 300,
+    powerHp: 400,
   });
   const [result, setResult] = useState<TuneResult | null>(null);
 
@@ -511,11 +511,11 @@ export default function CalculatorPage() {
                 <div style={{ position: "relative" }}>
                   <input
                     type="number"
-                    min={50}
-                    max={1200}
+                    min={80}
+                    max={1600}
                     step={10}
-                    value={form.powerKw}
-                    onChange={(e) => set("powerKw", Number(e.target.value))}
+                    value={form.powerHp}
+                    onChange={(e) => set("powerHp", Number(e.target.value))}
                     style={numInput}
                   />
                   <span
@@ -528,7 +528,7 @@ export default function CalculatorPage() {
                       color: "#475569",
                     }}
                   >
-                    kW
+                    hp
                   </span>
                 </div>
               </div>
@@ -552,9 +552,9 @@ export default function CalculatorPage() {
                   fontFamily: "monospace",
                 }}
               >
-                {(form.powerKw / (form.weightKg / 1000)).toFixed(1)}
+                {(form.powerHp / (form.weightKg / 1000)).toFixed(1)}
               </span>{" "}
-              kW/t
+              hp/t
             </div>
 
             {/* Login prompt */}
@@ -724,7 +724,7 @@ export default function CalculatorPage() {
                   {form.discipline.toUpperCase()}
                 </span>
                 <span>⚖️ {form.weightKg} kg</span>
-                <span>⚡ {form.powerKw} kW</span>
+                <span>⚡ {form.powerHp} hp</span>
               </div>
 
               {/* Grid 2 cols */}

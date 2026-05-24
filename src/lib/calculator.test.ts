@@ -21,7 +21,7 @@ const baseInput = (overrides: Partial<CalcInput> = {}): CalcInput => ({
   drivetrain: "RWD",
   discipline: "track",
   weightKg: 1400,
-  powerKw: 300,
+  powerHp: 400,
   ...overrides,
 });
 
@@ -44,14 +44,14 @@ describe("calculateFH6Tune", () => {
   });
 
   describe("gear — finalDrive matches FH6 guide values", () => {
-    it("powerKw=300 → finalDrive ≈ 4.25", () => {
-      const result = calculateFH6Tune(baseInput({ powerKw: 300 }));
-      expect(result.gear.finalDrive).toBeCloseTo(4.25, 1);
+    it("powerHp=400 → finalDrive ≈ 4.25", () => {
+      const result = calculateFH6Tune(baseInput({ powerHp: 400 }));
+      expect(result.gear.finalDrive).toBeCloseTo(4.25, 2);
     });
 
-    it("powerKw=447 → finalDrive ≈ 3.92", () => {
-      const result = calculateFH6Tune(baseInput({ powerKw: 447 }));
-      expect(result.gear.finalDrive).toBeCloseTo(3.92, 1);
+    it("powerHp=600 → finalDrive ≈ 3.92", () => {
+      const result = calculateFH6Tune(baseInput({ powerHp: 600 }));
+      expect(result.gear.finalDrive).toBeCloseTo(3.92, 2);
     });
   });
 

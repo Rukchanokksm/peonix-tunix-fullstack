@@ -14,7 +14,7 @@ export interface CalcInput {
   drivetrain: Drivetrain;
   discipline: Discipline;
   weightKg: number;
-  powerKw: number; // in-game FH6 power unit is kW
+  powerHp: number; // in-game FH6 garage power unit is hp
 }
 
 export interface TireResult {
@@ -166,7 +166,7 @@ function calcSprings({
   balanceFront,
   discipline,
   drivetrain,
-  powerKw,
+  powerHp,
 }: CalcInput): SpringResult {
   const STIFF: Record<Discipline, number> = {
     street: 1.0,
@@ -187,9 +187,9 @@ function calcSprings({
   const base = (weightKg / 8) * STIFF[discipline];
   let rateF = base * (balanceFront / 50);
   let rateR = base * ((100 - balanceFront) / 50);
-  // Power-driven axle stiffening (kW). Modest — absolute spring values are
-  // not meaningful in Forza; ratio/balance matter.
-  const pwBonus = Math.min((powerKw / 1100) * 28, 28);
+  // Power-driven axle stiffening (hp). Modest — absolute spring values are
+  // not meaningful in Forza; ratio/balance matter. 1475 hp ≈ 1100 kW cap.
+  const pwBonus = Math.min((powerHp / 1475) * 28, 28);
   if (drivetrain === "RWD") rateR += pwBonus;
   if (drivetrain === "AWD") {
     rateR += pwBonus * 0.5;
@@ -287,7 +287,7 @@ function calcBrakes({ balanceFront, discipline }: CalcInput): BrakeResult {
 }
 
 // ── DIFFERENTIAL ──────────────────────────────────────────────────────────────
-function calcDiff({ drivetrain, discipline, powerKw }: CalcInput): DiffResult {
+function calcDiff({ drivetrain, discipline, powerHp }: CalcInput): DiffResult {
   type DB = { fA: number; fD: number; rA: number; rD: number; ctr: number };
   const D: Record<Discipline, DB> = {
     street: { fA: 45, fD: 15, rA: 50, rD: 18, ctr: 55 },
@@ -298,7 +298,7 @@ function calcDiff({ drivetrain, discipline, powerKw }: CalcInput): DiffResult {
     drag: { fA: 100, fD: 0, rA: 100, rD: 0, ctr: 70 },
   };
   const d = D[discipline];
-  const pwB = Math.min((powerKw / 1100) * 12, 12);
+  const pwB = Math.min((powerHp / 1475) * 12, 12);
   const rA = Math.min(100, Math.round(d.rA + pwB));
   const fA = Math.min(100, Math.round(d.fA + pwB * 0.5));
   switch (drivetrain) {
@@ -318,10 +318,9 @@ function calcDiff({ drivetrain, discipline, powerKw }: CalcInput): DiffResult {
 }
 
 // ── GEAR ──────────────────────────────────────────────────────────────────────
-// Guide formula: final drive 4.25 at 400 hp, −0.01 per 6 hp. Input is kW.
-function calcGear({ powerKw }: CalcInput): GearResult {
-  const hp = powerKw / 0.7457;
-  const finalDrive = clamp(4.25 - ((hp - 400) / 6) * 0.01, 2.5, 5.5);
+// Guide formula: final drive 4.25 at 400 hp, −0.01 per 6 hp.
+function calcGear({ powerHp }: CalcInput): GearResult {
+  const finalDrive = clamp(4.25 - ((powerHp - 400) / 6) * 0.01, 2.5, 5.5);
   return { finalDrive: r2(finalDrive) };
 }
 
