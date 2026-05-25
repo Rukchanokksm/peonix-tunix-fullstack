@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { SHARE_ENABLED } from "@/lib/share";
 
 // ─── Social Icons ────────────────────────────────────────────────────────────
 function DiscordIcon() {
@@ -84,12 +85,18 @@ export function Footer() {
   const { t } = useLanguage();
   const year = new Date().getFullYear();
 
-  const PLATFORM_LINKS = [
-    { label: t.footer.browseTunes, href: "/tunes" },
-    { label: t.footer.tuneCalculator, href: "/calculator" },
-    { label: t.footer.forums, href: "/forums" },
-    { label: t.footer.uploadTune, href: "/tunes/new" },
-  ];
+  const PLATFORM_LINKS = SHARE_ENABLED
+    ? [
+        { label: t.footer.browseTunes, href: "/tunes" },
+        { label: t.footer.tuneCalculator, href: "/calculator" },
+        { label: t.footer.forums, href: "/forums" },
+        { label: t.footer.uploadTune, href: "/tunes/new" },
+      ]
+    : [
+        { label: t.footer.tuneCalculator, href: "/calculator" },
+        { label: "Blog", href: "/blog" },
+        { label: "Guideline", href: "/guideline" },
+      ];
 
   return (
     <footer
@@ -225,37 +232,39 @@ export function Footer() {
         </div>
 
         {/* Col 3 — Games */}
-        <div>
-          <h4 style={colHeadingStyle}>{t.footer.gamesTitle}</h4>
-          <ul style={ulStyle}>
-            {GAME_LINKS.map((l) => (
-              <li
-                key={l.href}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                <Link
-                  href={l.href}
+        {SHARE_ENABLED && (
+          <div>
+            <h4 style={colHeadingStyle}>{t.footer.gamesTitle}</h4>
+            <ul style={ulStyle}>
+              {GAME_LINKS.map((l) => (
+                <li
+                  key={l.href}
                   style={{
-                    ...footerLinkStyle,
-                    color: "#64748b",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = "#e2e8f0";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = "#64748b";
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
                   }}
                 >
-                  {l.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+                  <Link
+                    href={l.href}
+                    style={{
+                      ...footerLinkStyle,
+                      color: "#64748b",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.color = "#e2e8f0";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.color = "#64748b";
+                    }}
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Col 4 — Contact */}
         <div>

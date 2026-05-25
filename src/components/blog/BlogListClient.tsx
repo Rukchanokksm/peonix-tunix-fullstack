@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { BLOG_TAGS, getBlogTag } from "@/lib/blogTags";
+import { SHARE_ENABLED } from "@/lib/share";
 
 type Post = {
   id: string;
@@ -92,7 +93,7 @@ export function BlogListClient({
             {t.blog.subtitle}
           </p>
         </div>
-        {isAdmin && (
+        {isAdmin && SHARE_ENABLED && (
           <Link
             href="/blog/new"
             style={{

@@ -1,7 +1,5 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useUserStore } from "@/stores/userStore";
 import { calculateFH6Tune } from "@/lib/calculator";
 import type {
   CalcInput,
@@ -283,14 +281,8 @@ const labelSt: React.CSSProperties = {
 };
 
 export default function CalculatorPage() {
-  const router = useRouter();
   const { t } = useLanguage();
   const C = t.calc;
-  const user = useUserStore((s) => s.user);
-  const isLoading = useUserStore((s) => s.isLoading);
-  const isLoggedIn = !isLoading && !!user;
-
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   const [form, setForm] = useState<CalcInput>({
     balanceFront: 50,
@@ -305,11 +297,6 @@ export default function CalculatorPage() {
     setForm((f) => ({ ...f, [k]: v }));
 
   const handleCalc = () => {
-    if (!user) {
-      setShowLoginPrompt(true);
-      return;
-    }
-    setShowLoginPrompt(false);
     setResult(calculateFH6Tune(form));
   };
 
@@ -557,99 +544,28 @@ export default function CalculatorPage() {
               hp/t
             </div>
 
-            {/* Login prompt */}
-            {showLoginPrompt && (
-              <div
-                style={{
-                  padding: "14px",
-                  borderRadius: "9px",
-                  background: "rgba(248,113,113,0.08)",
-                  border: "1px solid rgba(248,113,113,0.25)",
-                  textAlign: "center",
-                }}
-              >
-                <p
-                  style={{
-                    margin: "0 0 10px",
-                    fontSize: "13px",
-                    color: "#f87171",
-                    fontWeight: 600,
-                  }}
-                >
-                  {C.loginPromptTitle}
-                </p>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "8px",
-                    justifyContent: "center",
-                  }}
-                >
-                  <button
-                    onClick={() => router.push("/login?next=/calculator")}
-                    style={{
-                      padding: "7px 18px",
-                      borderRadius: "7px",
-                      border: "none",
-                      background: "#facc15",
-                      color: "#0d0f14",
-                      fontWeight: 700,
-                      fontSize: "13px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    {C.signIn}
-                  </button>
-                  <button
-                    onClick={() => router.push("/register")}
-                    style={{
-                      padding: "7px 18px",
-                      borderRadius: "7px",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      background: "transparent",
-                      color: "#94a3b8",
-                      fontWeight: 600,
-                      fontSize: "13px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    {C.register}
-                  </button>
-                </div>
-              </div>
-            )}
-
             {/* Calculate button */}
             <button
               onClick={handleCalc}
-              disabled={isLoading}
               style={{
                 padding: "13px",
                 borderRadius: "9px",
                 border: "none",
-                background: isLoading
-                  ? "#1e293b"
-                  : isLoggedIn
-                    ? "#facc15"
-                    : "#1e293b",
-                color: isLoading
-                  ? "#475569"
-                  : isLoggedIn
-                    ? "#0d0f14"
-                    : "#475569",
+                background: "#facc15",
+                color: "#0d0f14",
                 fontWeight: 800,
                 fontSize: "15px",
-                cursor: isLoading ? "default" : "pointer",
+                cursor: "pointer",
                 transition: "opacity 0.15s",
               }}
               onMouseEnter={(e) => {
-                if (isLoggedIn) e.currentTarget.style.opacity = "0.85";
+                e.currentTarget.style.opacity = "0.85";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.opacity = "1";
               }}
             >
-              {isLoading ? C.loadingBtn : isLoggedIn ? C.calculate : C.loginBtn}
+              {C.calculate}
             </button>
             <AdUnit
               slot="calculator-form-bottom"

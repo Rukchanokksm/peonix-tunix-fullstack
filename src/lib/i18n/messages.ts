@@ -127,7 +127,31 @@ type Schema = {
     | "catReport"
     | "statusLive"
     | "statusSoon"
-    | "statusComing",
+    | "statusComing"
+    | "landingBadge"
+    | "landingHeroTitle"
+    | "landingHeroTitleAccent"
+    | "landingHeroDesc"
+    | "landingCtaCalculate"
+    | "landingCtaSecondary"
+    | "landingHowTitle"
+    | "landingHow1Title"
+    | "landingHow1Desc"
+    | "landingHow2Title"
+    | "landingHow2Desc"
+    | "landingHow3Title"
+    | "landingHow3Desc"
+    | "landingFeaturesTitle"
+    | "landingFeatFree"
+    | "landingFeatFreeDesc"
+    | "landingFeatNoLogin"
+    | "landingFeatNoLoginDesc"
+    | "landingFeatFh6"
+    | "landingFeatFh6Desc"
+    | "landingFeatAllDriv"
+    | "landingFeatAllDrivDesc"
+    | "landingTipsTitle"
+    | "landingTipsReadMore",
     string
   >;
   tunes: Record<
@@ -697,6 +721,38 @@ export const MESSAGES: Record<Locale, Schema> = {
       statusLive: "LIVE",
       statusSoon: "SOON",
       statusComing: "COMING",
+      // Calculator-first landing (share-disabled mode)
+      landingBadge: "Forza Horizon Auto-Tune",
+      landingHeroTitle: "Instant tune setups for",
+      landingHeroTitleAccent: "Forza Horizon 6",
+      landingHeroDesc:
+        "Enter your car's weight, power, and discipline — get a complete tune in seconds. Free, no signup required.",
+      landingCtaCalculate: "Calculate now →",
+      landingCtaSecondary: "Read tuning tips",
+      landingHowTitle: "How it works",
+      landingHow1Title: "1. Enter your car",
+      landingHow1Desc:
+        "Weight, power, drivetrain, and what you're driving for — road, track, drift, drag.",
+      landingHow2Title: "2. Hit calculate",
+      landingHow2Desc:
+        "Our engine spits out tire pressures, springs, dampers, ARB, aero, gearing, diff — all of it.",
+      landingHow3Title: "3. Copy to game",
+      landingHow3Desc:
+        "Plug the numbers into the in-game tuning screen and hit the track.",
+      landingFeaturesTitle: "Why Tunix",
+      landingFeatFree: "Completely free",
+      landingFeatFreeDesc:
+        "No paywall, no premium tiers. Ad-supported so the calc stays open.",
+      landingFeatNoLogin: "No signup",
+      landingFeatNoLoginDesc: "Open the page, calculate, copy. Zero friction.",
+      landingFeatFh6: "Built for FH6",
+      landingFeatFh6Desc:
+        "Tuned to Forza Horizon 6's physics — also works as a strong starting point for FH5.",
+      landingFeatAllDriv: "All drivetrains",
+      landingFeatAllDrivDesc:
+        "RWD, FWD, AWD — diff outputs adjust automatically. Six disciplines.",
+      landingTipsTitle: "Tuning tips & guides",
+      landingTipsReadMore: "Read →",
     },
     // ─── Tunes list page ─────────────────────────────────────────────────
     tunes: {
@@ -1278,6 +1334,37 @@ export const MESSAGES: Record<Locale, Schema> = {
       statusLive: "LIVE",
       statusSoon: "SOON",
       statusComing: "COMING",
+      // Calculator-first landing (share-disabled mode)
+      landingBadge: "เครื่องคำนวณ Tune อัตโนมัติ Forza Horizon",
+      landingHeroTitle: "ตั้งค่า tune ทันใจ สำหรับ",
+      landingHeroTitleAccent: "Forza Horizon 6",
+      landingHeroDesc:
+        "กรอกน้ำหนัก แรงม้า และสไตล์การขับ — รับชุดตั้งค่า tune เต็มรูปแบบในไม่กี่วินาที. ฟรี ไม่ต้องสมัครสมาชิก.",
+      landingCtaCalculate: "เริ่มคำนวณ →",
+      landingCtaSecondary: "อ่านคู่มือการตั้ง tune",
+      landingHowTitle: "ใช้งานยังไง",
+      landingHow1Title: "1. กรอกข้อมูลรถ",
+      landingHow1Desc:
+        "น้ำหนัก แรงม้า ระบบขับเคลื่อน และแนวการขับ — Street, Track, Drift, Drag ฯลฯ",
+      landingHow2Title: "2. กดคำนวณ",
+      landingHow2Desc:
+        "ระบบจะคำนวณค่ายาง สปริง โช้ค เหล็กกันโคลง ปีก เกียร์ และ Differential ให้พร้อม",
+      landingHow3Title: "3. ใส่ค่าในเกม",
+      landingHow3Desc: "เปิดหน้า tuning ในเกม ใส่ค่าตามที่ได้ แล้วลงสนามได้เลย",
+      landingFeaturesTitle: "ทำไมต้อง Tunix",
+      landingFeatFree: "ใช้ฟรี",
+      landingFeatFreeDesc: "ไม่มี paywall ไม่มีระดับ premium อยู่ได้ด้วยโฆษณา",
+      landingFeatNoLogin: "ไม่ต้องสมัครสมาชิก",
+      landingFeatNoLoginDesc:
+        "เปิดหน้า กรอก คำนวณ คัดลอก — ไม่มีขั้นตอนซับซ้อน",
+      landingFeatFh6: "ออกแบบสำหรับ FH6",
+      landingFeatFh6Desc:
+        "ปรับให้เข้ากับฟิสิกส์ของ Forza Horizon 6 — ใช้กับ FH5 ก็เป็นจุดเริ่มต้นที่ดี",
+      landingFeatAllDriv: "รองรับทุกระบบขับเคลื่อน",
+      landingFeatAllDrivDesc:
+        "RWD, FWD, AWD — ค่า Diff ปรับอัตโนมัติ. รองรับ 6 ประเภทการขับ",
+      landingTipsTitle: "เคล็ดลับและคู่มือการตั้ง tune",
+      landingTipsReadMore: "อ่าน →",
     },
     tunes: {
       title: "ค้นหา Tune",

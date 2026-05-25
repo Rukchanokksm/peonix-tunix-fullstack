@@ -36,8 +36,7 @@ PhoenixTune ปัจจุบันมีทั้ง community/share features 
 
 ```ts
 // src/lib/share.ts
-export const SHARE_ENABLED =
-  process.env.NEXT_PUBLIC_SHARE_ENABLED !== "false";
+export const SHARE_ENABLED = process.env.NEXT_PUBLIC_SHARE_ENABLED !== "false";
 
 // Routes ที่ปิดเมื่อ flag = false
 export const SHARE_ROUTE_PREFIXES = [
@@ -65,41 +64,45 @@ export const SHARE_API_PREFIXES = [
 
 Default = `true` (พฤติกรรมเดิม) — ต้อง set `NEXT_PUBLIC_SHARE_ENABLED=false` ใน production เท่านั้น
 
-### Defense in depth (3 layers)
+### Two-layer gate
 
-1. **Edge gate (`src/proxy.ts`)** — redirect share routes → `/` ที่ Next.js proxy. ป้องกันการเข้า URL ตรง + Google indexing
-2. **API gate** — share API routes return `404` ถ้า flag off (ผ่าน helper `assertShareEnabled()` ตอนต้น handler)
-3. **UI gate** — Navbar, Footer, Home, blog/guideline pages เช็ค `SHARE_ENABLED` ก่อน render link/widgets
+1. **Edge gate (`src/proxy.ts`)** — เมื่อ flag = false:
+   - Share routes (`/tunes`, `/saved`, `/profile`, `/forums`, `/games`, `/blog/new`, `/guideline/new`) → 307 redirect `/`
+   - Share APIs (`/api/tunes/*`, `/api/saves`, `/api/forum/*`, `/api/search`) → 404
+   - Blog/guideline mutating APIs (`POST /api/blog/posts` etc.) → 404 (GET still works)
+2. **UI gate** — Navbar, Footer, Home, blog/guideline pages เช็ค `SHARE_ENABLED` ก่อน render link/widgets
+
+Proxy matcher ครอบทุก path รวม `/api/*` แล้ว — ไม่ต้องมี per-route guard ซ้ำ.
 
 ### Scope of changes
 
 #### Hidden เมื่อ `SHARE_ENABLED=false`
 
-| Area | Detail |
-|---|---|
-| Routes | `/tunes`, `/tunes/[id]`, `/tunes/new`, `/saved`, `/profile/[username]`, `/forums/*`, `/games/*`, `/blog/new`, `/guideline/new` |
-| APIs | `/api/tunes/*`, `/api/saves`, `/api/forum/*`, `/api/search` (all return 404) |
-| Blog/Guideline mutating APIs | `POST /api/blog/posts`, `/api/blog/comments`, `POST /api/guideline/posts`, `/api/guideline/comments` |
-| Navbar | Forums link, Games dropdown, Search bar, Login/Register CTAs, user menu items (Profile, MyTunes, SavedTunes) |
-| Footer | Share-related links |
-| Home | tune count, latest forum posts, games widget |
-| Blog/Guideline pages | "New post" buttons, comment form, upvote/like ปุ่ม |
-| Calculator | Login wall (`showLoginPrompt` + gating logic) |
+| Area                         | Detail                                                                                                                         |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Routes                       | `/tunes`, `/tunes/[id]`, `/tunes/new`, `/saved`, `/profile/[username]`, `/forums/*`, `/games/*`, `/blog/new`, `/guideline/new` |
+| APIs                         | `/api/tunes/*`, `/api/saves`, `/api/forum/*`, `/api/search` (all return 404)                                                   |
+| Blog/Guideline mutating APIs | `POST /api/blog/posts`, `/api/blog/comments`, `POST /api/guideline/posts`, `/api/guideline/comments`                           |
+| Navbar                       | Forums link, Games dropdown, Search bar, Login/Register CTAs, user menu items (Profile, MyTunes, SavedTunes)                   |
+| Footer                       | Share-related links                                                                                                            |
+| Home                         | tune count, latest forum posts, games widget                                                                                   |
+| Blog/Guideline pages         | "New post" buttons, comment form, upvote/like ปุ่ม                                                                             |
+| Calculator                   | Login wall (`showLoginPrompt` + gating logic)                                                                                  |
 
 #### Kept (functioning normally)
 
-| Area | Notes |
-|---|---|
-| `/calculator` | Core product — กลายเป็น public/no-login |
-| `/blog`, `/blog/[id]` | Read-only — content + SEO |
-| `/guideline`, `/guideline/[id]` | Read-only — content + SEO |
-| `/login`, `/register` | Auth ยังเข้าได้ direct (ไม่มี nav link), keep existing user revival path |
-| `/settings` | Keep password change. Avatar upload + public-profile fields hide |
-| `/terms`, `/privacy` | Static pages |
-| User menu (when logged in) | Settings + Sign out only |
-| Stripe webhook | Idle (PREMIUM_ENABLED off) |
-| Auth flow, Supabase clients, DB schema | ไม่แตะ |
-| Calculator logic (`src/lib/calculator.ts`) | ไม่แตะ |
+| Area                                       | Notes                                                                    |
+| ------------------------------------------ | ------------------------------------------------------------------------ |
+| `/calculator`                              | Core product — กลายเป็น public/no-login                                  |
+| `/blog`, `/blog/[id]`                      | Read-only — content + SEO                                                |
+| `/guideline`, `/guideline/[id]`            | Read-only — content + SEO                                                |
+| `/login`, `/register`                      | Auth ยังเข้าได้ direct (ไม่มี nav link), keep existing user revival path |
+| `/settings`                                | Keep password change. Avatar upload + public-profile fields hide         |
+| `/terms`, `/privacy`                       | Static pages                                                             |
+| User menu (when logged in)                 | Settings + Sign out only                                                 |
+| Stripe webhook                             | Idle (PREMIUM_ENABLED off)                                               |
+| Auth flow, Supabase clients, DB schema     | ไม่แตะ                                                                   |
+| Calculator logic (`src/lib/calculator.ts`) | ไม่แตะ                                                                   |
 
 ### Homepage redesign (`src/components/home/HomeClient.tsx`)
 
@@ -125,14 +128,14 @@ Default = `true` (พฤติกรรมเดิม) — ต้อง set `NE
 
 ## Component Boundaries
 
-| Unit | Responsibility | Dependencies |
-|---|---|---|
-| `src/lib/share.ts` | Flag + route lists (pure constants) | none |
-| `src/proxy.ts` | Edge redirect logic | `share.ts` |
-| `src/lib/api/share-gate.ts` (new helper) | `assertShareEnabled()` → returns 404 NextResponse | `share.ts` |
-| Each share API route | calls `assertShareEnabled()` at top | helper |
-| `Navbar.tsx`, `Footer.tsx`, `HomeClient.tsx` | conditional render ตาม `SHARE_ENABLED` | `share.ts` |
-| Calculator page | ลบ login wall (ไม่เกี่ยวกับ flag เลย — เป็น direct change) | none |
+| Unit                                         | Responsibility                                             | Dependencies |
+| -------------------------------------------- | ---------------------------------------------------------- | ------------ |
+| `src/lib/share.ts`                           | Flag + route lists (pure constants)                        | none         |
+| `src/proxy.ts`                               | Edge redirect logic                                        | `share.ts`   |
+| `src/lib/api/share-gate.ts` (new helper)     | `assertShareEnabled()` → returns 404 NextResponse          | `share.ts`   |
+| Each share API route                         | calls `assertShareEnabled()` at top                        | helper       |
+| `Navbar.tsx`, `Footer.tsx`, `HomeClient.tsx` | conditional render ตาม `SHARE_ENABLED`                     | `share.ts`   |
+| Calculator page                              | ลบ login wall (ไม่เกี่ยวกับ flag เลย — เป็น direct change) | none         |
 
 ## Error Handling
 
