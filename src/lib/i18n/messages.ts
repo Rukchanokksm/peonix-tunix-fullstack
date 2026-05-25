@@ -151,7 +151,10 @@ type Schema = {
     | "landingFeatAllDriv"
     | "landingFeatAllDrivDesc"
     | "landingTipsTitle"
-    | "landingTipsReadMore",
+    | "landingTipsReadMore"
+    | "landingPickGame"
+    | "landingFh5Tagline"
+    | "landingFh6Tagline",
     string
   >;
   tunes: Record<
@@ -256,6 +259,7 @@ type Schema = {
     | "discipline"
     | "weight"
     | "power"
+    | "torque"
     | "calculate"
     | "loadingBtn"
     | "loginBtn"
@@ -753,6 +757,11 @@ export const MESSAGES: Record<Locale, Schema> = {
         "RWD, FWD, AWD — diff outputs adjust automatically. Six disciplines.",
       landingTipsTitle: "Tuning tips & guides",
       landingTipsReadMore: "Read →",
+      landingPickGame: "Pick your game",
+      landingFh5Tagline:
+        "Original FH5 tuning model — torque input, 5 disciplines.",
+      landingFh6Tagline:
+        "Latest FH6 engine — horsepower input, drag racing, split aero.",
     },
     // ─── Tunes list page ─────────────────────────────────────────────────
     tunes: {
@@ -858,6 +867,7 @@ export const MESSAGES: Record<Locale, Schema> = {
       discipline: "Discipline",
       weight: "Weight",
       power: "Power",
+      torque: "Torque",
       calculate: "🧮 Calculate Tune",
       loadingBtn: "Loading...",
       loginBtn: "🔒 Sign in to use",
@@ -1365,6 +1375,11 @@ export const MESSAGES: Record<Locale, Schema> = {
         "RWD, FWD, AWD — ค่า Diff ปรับอัตโนมัติ. รองรับ 6 ประเภทการขับ",
       landingTipsTitle: "เคล็ดลับและคู่มือการตั้ง tune",
       landingTipsReadMore: "อ่าน →",
+      landingPickGame: "เลือกเกมที่คุณเล่น",
+      landingFh5Tagline:
+        "เครื่องคำนวณรุ่นเดิมสำหรับ FH5 — กรอกแรงบิด (Nm), 5 ประเภทการขับ",
+      landingFh6Tagline:
+        "เครื่องคำนวณรุ่นใหม่ FH6 — กรอกแรงม้า (hp), รองรับ Drag, แยก aero หน้า/หลัง",
     },
     tunes: {
       title: "ค้นหา Tune",
@@ -1466,6 +1481,7 @@ export const MESSAGES: Record<Locale, Schema> = {
       discipline: "ประเภทการใช้งาน",
       weight: "น้ำหนัก",
       power: "กำลังเครื่อง",
+      torque: "แรงบิด",
       calculate: "🧮 คำนวณ Tune",
       loadingBtn: "กำลังโหลด...",
       loginBtn: "🔒 เข้าสู่ระบบเพื่อใช้งาน",

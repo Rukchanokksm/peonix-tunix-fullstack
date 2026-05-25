@@ -123,43 +123,159 @@ export function HomeClient({ latestPosts }: Props) {
         >
           {h.landingHeroDesc}
         </p>
-        <div
-          style={{
-            display: "flex",
-            gap: "12px",
-            justifyContent: "center",
-            flexWrap: "wrap",
-          }}
-        >
-          <Link
-            href="/calculator"
-            style={{
-              padding: "14px 32px",
-              borderRadius: "9px",
-              background: "#facc15",
-              color: "#0d0f14",
-              fontWeight: 800,
-              fontSize: "16px",
-              textDecoration: "none",
-            }}
-          >
-            {h.landingCtaCalculate}
-          </Link>
+        <div style={{ textAlign: "center" }}>
           <Link
             href="/guideline"
             style={{
-              padding: "14px 28px",
-              borderRadius: "9px",
-              background: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              color: "#cbd5e1",
-              fontWeight: 600,
-              fontSize: "15px",
-              textDecoration: "none",
+              fontSize: "13px",
+              color: "#94a3b8",
+              textDecoration: "underline",
+              textUnderlineOffset: "3px",
             }}
           >
             {h.landingCtaSecondary}
           </Link>
+        </div>
+      </section>
+
+      {/* GAME PICKER */}
+      <section
+        style={{
+          maxWidth: "1080px",
+          margin: "0 auto",
+          padding: "8px 24px 56px",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "18px",
+            fontWeight: 700,
+            color: "#cbd5e1",
+            margin: "0 0 18px",
+            textAlign: "center",
+            letterSpacing: "0.02em",
+          }}
+        >
+          {h.landingPickGame}
+        </h2>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+            gap: "16px",
+            maxWidth: "720px",
+            margin: "0 auto",
+          }}
+        >
+          {[
+            {
+              game: "fh6" as const,
+              title: "Forza Horizon 6",
+              short: "FH6",
+              gradient: "linear-gradient(135deg,#2a1f3a,#1a0f2a,#0d0f1e)",
+              accent: "#c084fc",
+              version: "v2.0",
+              tagline: h.landingFh6Tagline,
+            },
+            {
+              game: "fh5" as const,
+              title: "Forza Horizon 5",
+              short: "FH5",
+              gradient: "linear-gradient(135deg,#1e3a5f,#0f2040,#0d0f1e)",
+              accent: "#60a5fa",
+              version: "v1.0",
+              tagline: h.landingFh5Tagline,
+            },
+          ].map((card) => (
+            <Link
+              key={card.game}
+              href={`/calculator?game=${card.game}`}
+              style={{
+                position: "relative",
+                display: "block",
+                borderRadius: "14px",
+                border: `1px solid ${card.accent}44`,
+                background: card.gradient,
+                padding: "26px 24px",
+                textDecoration: "none",
+                color: "#f1f5f9",
+                overflow: "hidden",
+                transition: "transform 0.2s, box-shadow 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.transform = "translateY(-3px)";
+                el.style.boxShadow = `0 12px 36px ${card.accent}33`;
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.transform = "translateY(0)";
+                el.style.boxShadow = "none";
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "10px",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    letterSpacing: "0.14em",
+                    color: card.accent,
+                    background: `${card.accent}22`,
+                    border: `1px solid ${card.accent}55`,
+                    padding: "3px 9px",
+                    borderRadius: "5px",
+                  }}
+                >
+                  {card.short}
+                </span>
+                <span
+                  style={{
+                    fontSize: "10px",
+                    color: "#94a3b8",
+                    fontFamily: "monospace",
+                  }}
+                >
+                  Engine {card.version}
+                </span>
+              </div>
+              <h3
+                style={{
+                  fontSize: "20px",
+                  fontWeight: 800,
+                  margin: "0 0 6px",
+                  color: "#f1f5f9",
+                }}
+              >
+                {card.title}
+              </h3>
+              <p
+                style={{
+                  margin: "0 0 16px",
+                  fontSize: "13px",
+                  color: "#94a3b8",
+                  lineHeight: 1.5,
+                }}
+              >
+                {card.tagline}
+              </p>
+              <span
+                style={{
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  color: card.accent,
+                }}
+              >
+                {h.landingCtaCalculate}
+              </span>
+            </Link>
+          ))}
         </div>
       </section>
 
