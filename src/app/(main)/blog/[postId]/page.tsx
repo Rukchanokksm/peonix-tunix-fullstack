@@ -10,6 +10,7 @@ import {
 } from "@/components/content/ArticleBody";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { getBlogTag } from "@/lib/blogTags";
+import { SHARE_ENABLED } from "@/lib/share";
 
 type Post = {
   id: string;
@@ -613,180 +614,182 @@ export default function BlogPostPage() {
           </article>
 
           {/* Comments */}
-          <div
-            style={{
-              background: "#111318",
-              border: "1px solid rgba(255,255,255,0.06)",
-              borderRadius: "12px",
-              overflow: "hidden",
-            }}
-          >
+          {SHARE_ENABLED && (
             <div
               style={{
-                padding: "14px 24px",
-                borderBottom: "1px solid rgba(255,255,255,0.05)",
+                background: "#111318",
+                border: "1px solid rgba(255,255,255,0.06)",
+                borderRadius: "12px",
+                overflow: "hidden",
               }}
             >
-              <span
-                style={{
-                  color: "#94a3b8",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                }}
-              >
-                {t.blog.commentsTitle} ({comments.length})
-              </span>
-            </div>
-
-            {comments.length === 0 ? (
               <div
                 style={{
-                  padding: "32px 24px",
-                  color: "#374151",
-                  fontSize: "13px",
-                  textAlign: "center",
+                  padding: "14px 24px",
+                  borderBottom: "1px solid rgba(255,255,255,0.05)",
                 }}
               >
-                {t.blog.noComments}
+                <span
+                  style={{
+                    color: "#94a3b8",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {t.blog.commentsTitle} ({comments.length})
+                </span>
               </div>
-            ) : (
-              comments.map((c) => (
+
+              {comments.length === 0 ? (
                 <div
-                  key={c.id}
+                  style={{
+                    padding: "32px 24px",
+                    color: "#374151",
+                    fontSize: "13px",
+                    textAlign: "center",
+                  }}
+                >
+                  {t.blog.noComments}
+                </div>
+              ) : (
+                comments.map((c) => (
+                  <div
+                    key={c.id}
+                    style={{
+                      padding: "16px 24px",
+                      borderBottom: "1px solid rgba(255,255,255,0.03)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "10px",
+                        alignItems: "center",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      {c.user ? (
+                        <Link
+                          href={`/profile/${c.user.username}`}
+                          style={{
+                            color: "#64748b",
+                            fontSize: "13px",
+                            fontWeight: 600,
+                            textDecoration: "none",
+                          }}
+                        >
+                          @{c.user.username}
+                        </Link>
+                      ) : (
+                        <span style={{ color: "#64748b", fontSize: "13px" }}>
+                          —
+                        </span>
+                      )}
+                      <span style={{ color: "#374151", fontSize: "11px" }}>
+                        {timeAgo(c.created_at)}
+                      </span>
+                      {me && c.user?.id === me.id && (
+                        <button
+                          onClick={() => deleteComment(c.id)}
+                          style={{
+                            marginLeft: "auto",
+                            background: "transparent",
+                            border: "1px solid rgba(239,68,68,0.3)",
+                            color: "#ef4444",
+                            fontSize: "11px",
+                            cursor: "pointer",
+                            padding: "2px 10px",
+                            borderRadius: "5px",
+                          }}
+                        >
+                          {t.blog.deleteComment}
+                        </button>
+                      )}
+                    </div>
+                    <div
+                      style={{
+                        color: "#cbd5e1",
+                        fontSize: "14px",
+                        lineHeight: "1.65",
+                        whiteSpace: "pre-wrap",
+                      }}
+                    >
+                      {c.body}
+                    </div>
+                  </div>
+                ))
+              )}
+
+              {me ? (
+                <form
+                  onSubmit={submitComment}
                   style={{
                     padding: "16px 24px",
-                    borderBottom: "1px solid rgba(255,255,255,0.03)",
+                    borderTop: "1px solid rgba(255,255,255,0.05)",
+                    display: "flex",
+                    gap: "12px",
                   }}
                 >
-                  <div
+                  <textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder={t.blog.commentPlaceholder}
+                    rows={3}
+                    style={{ flex: 1, ...TA }}
+                  />
+                  <button
+                    type="submit"
+                    disabled={submitting || !newComment.trim()}
                     style={{
-                      display: "flex",
-                      gap: "10px",
-                      alignItems: "center",
-                      marginBottom: "8px",
+                      padding: "10px 18px",
+                      borderRadius: "7px",
+                      background: "#60a5fa",
+                      color: "#000",
+                      fontSize: "13px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      border: "none",
+                      alignSelf: "flex-end",
+                      opacity: submitting || !newComment.trim() ? 0.5 : 1,
                     }}
                   >
-                    {c.user ? (
-                      <Link
-                        href={`/profile/${c.user.username}`}
-                        style={{
-                          color: "#64748b",
-                          fontSize: "13px",
-                          fontWeight: 600,
-                          textDecoration: "none",
-                        }}
-                      >
-                        @{c.user.username}
-                      </Link>
-                    ) : (
-                      <span style={{ color: "#64748b", fontSize: "13px" }}>
-                        —
-                      </span>
-                    )}
-                    <span style={{ color: "#374151", fontSize: "11px" }}>
-                      {timeAgo(c.created_at)}
-                    </span>
-                    {me && c.user?.id === me.id && (
-                      <button
-                        onClick={() => deleteComment(c.id)}
-                        style={{
-                          marginLeft: "auto",
-                          background: "transparent",
-                          border: "1px solid rgba(239,68,68,0.3)",
-                          color: "#ef4444",
-                          fontSize: "11px",
-                          cursor: "pointer",
-                          padding: "2px 10px",
-                          borderRadius: "5px",
-                        }}
-                      >
-                        {t.blog.deleteComment}
-                      </button>
-                    )}
-                  </div>
-                  <div
-                    style={{
-                      color: "#cbd5e1",
-                      fontSize: "14px",
-                      lineHeight: "1.65",
-                      whiteSpace: "pre-wrap",
-                    }}
-                  >
-                    {c.body}
-                  </div>
-                </div>
-              ))
-            )}
-
-            {me ? (
-              <form
-                onSubmit={submitComment}
-                style={{
-                  padding: "16px 24px",
-                  borderTop: "1px solid rgba(255,255,255,0.05)",
-                  display: "flex",
-                  gap: "12px",
-                }}
-              >
-                <textarea
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder={t.blog.commentPlaceholder}
-                  rows={3}
-                  style={{ flex: 1, ...TA }}
-                />
-                <button
-                  type="submit"
-                  disabled={submitting || !newComment.trim()}
+                    {submitting ? t.blog.posting : t.blog.postComment}
+                  </button>
+                </form>
+              ) : (
+                <div
                   style={{
-                    padding: "10px 18px",
-                    borderRadius: "7px",
-                    background: "#60a5fa",
-                    color: "#000",
+                    padding: "16px 24px",
+                    borderTop: "1px solid rgba(255,255,255,0.05)",
+                    color: "#475569",
                     fontSize: "13px",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    border: "none",
-                    alignSelf: "flex-end",
-                    opacity: submitting || !newComment.trim() ? 0.5 : 1,
+                    textAlign: "center",
                   }}
                 >
-                  {submitting ? t.blog.posting : t.blog.postComment}
-                </button>
-              </form>
-            ) : (
-              <div
-                style={{
-                  padding: "16px 24px",
-                  borderTop: "1px solid rgba(255,255,255,0.05)",
-                  color: "#475569",
-                  fontSize: "13px",
-                  textAlign: "center",
-                }}
-              >
-                <Link
-                  href="/login"
-                  style={{ color: "#60a5fa", textDecoration: "none" }}
-                >
-                  {t.blog.signInToComment}
-                </Link>
-              </div>
-            )}
+                  <Link
+                    href="/login"
+                    style={{ color: "#60a5fa", textDecoration: "none" }}
+                  >
+                    {t.blog.signInToComment}
+                  </Link>
+                </div>
+              )}
 
-            {error && (
-              <div
-                style={{
-                  padding: "8px 24px",
-                  color: "#f87171",
-                  fontSize: "13px",
-                }}
-              >
-                {error}
-              </div>
-            )}
-          </div>
+              {error && (
+                <div
+                  style={{
+                    padding: "8px 24px",
+                    color: "#f87171",
+                    fontSize: "13px",
+                  }}
+                >
+                  {error}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

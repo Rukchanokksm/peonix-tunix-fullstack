@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { PREMIUM_ENABLED } from "@/lib/premium";
+import { SHARE_ENABLED } from "@/lib/share";
 import { SearchDropdown } from "@/components/search/SearchDropdown";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import tunixLogo from "@/app/tunix_wall.png";
@@ -196,89 +197,97 @@ export function Navbar() {
               {t.nav.home}
             </Link>
 
-            {/* Games dropdown */}
-            <div ref={gamesRef} style={{ position: "relative" }}>
-              <button
-                onClick={() => setGamesOpen((o) => !o)}
-                style={{
-                  ...navLinkStyle,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                }}
-              >
-                {t.nav.games} <ChevronIcon open={gamesOpen} />
-              </button>
+            <Link href="/calculator" style={navLinkStyle}>
+              {t.nav.calculator}
+            </Link>
 
-              {gamesOpen && (
-                <div
+            {/* Games dropdown */}
+            {SHARE_ENABLED && (
+              <div ref={gamesRef} style={{ position: "relative" }}>
+                <button
+                  onClick={() => setGamesOpen((o) => !o)}
                   style={{
-                    position: "absolute",
-                    top: "calc(100% + 8px)",
-                    left: 0,
-                    background: "#161820",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    borderRadius: "10px",
-                    padding: "6px",
-                    minWidth: "210px",
-                    boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+                    ...navLinkStyle,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
                   }}
                 >
-                  {GAMES.map((g) => (
-                    <Link
-                      key={g.slug}
-                      href={g.active ? `/games/${g.slug}` : "#"}
-                      onClick={() => setGamesOpen(false)}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        padding: "8px 12px",
-                        borderRadius: "6px",
-                        textDecoration: "none",
-                        color: g.active ? "#e2e8f0" : "#64748b",
-                        fontSize: "13.5px",
-                        transition: "background 0.1s",
-                        cursor: g.active ? "pointer" : "default",
-                      }}
-                      onMouseEnter={(e) => {
-                        if (g.active)
-                          (e.currentTarget as HTMLElement).style.background =
-                            "rgba(255,255,255,0.06)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.background =
-                          "transparent";
-                      }}
-                    >
-                      {g.name}
-                      {!g.active && (
-                        <span
-                          style={{
-                            fontSize: "10px",
-                            fontWeight: 600,
-                            padding: "2px 6px",
-                            borderRadius: "4px",
-                            background: "rgba(250,204,21,0.15)",
-                            color: "#facc15",
-                            letterSpacing: "0.3px",
-                          }}
-                        >
-                          {t.nav.soon}
-                        </span>
-                      )}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
+                  {t.nav.games} <ChevronIcon open={gamesOpen} />
+                </button>
 
-            <Link href="/forums" style={navLinkStyle}>
-              {t.nav.forums}
-            </Link>
+                {gamesOpen && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "calc(100% + 8px)",
+                      left: 0,
+                      background: "#161820",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      borderRadius: "10px",
+                      padding: "6px",
+                      minWidth: "210px",
+                      boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+                    }}
+                  >
+                    {GAMES.map((g) => (
+                      <Link
+                        key={g.slug}
+                        href={g.active ? `/games/${g.slug}` : "#"}
+                        onClick={() => setGamesOpen(false)}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          padding: "8px 12px",
+                          borderRadius: "6px",
+                          textDecoration: "none",
+                          color: g.active ? "#e2e8f0" : "#64748b",
+                          fontSize: "13.5px",
+                          transition: "background 0.1s",
+                          cursor: g.active ? "pointer" : "default",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (g.active)
+                            (e.currentTarget as HTMLElement).style.background =
+                              "rgba(255,255,255,0.06)";
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLElement).style.background =
+                            "transparent";
+                        }}
+                      >
+                        {g.name}
+                        {!g.active && (
+                          <span
+                            style={{
+                              fontSize: "10px",
+                              fontWeight: 600,
+                              padding: "2px 6px",
+                              borderRadius: "4px",
+                              background: "rgba(250,204,21,0.15)",
+                              color: "#facc15",
+                              letterSpacing: "0.3px",
+                            }}
+                          >
+                            {t.nav.soon}
+                          </span>
+                        )}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {SHARE_ENABLED && (
+              <Link href="/forums" style={navLinkStyle}>
+                {t.nav.forums}
+              </Link>
+            )}
 
             <Link href="/guideline" style={navLinkStyle}>
               {t.nav.guideline}
@@ -291,59 +300,63 @@ export function Navbar() {
         </div>
 
         {/* ── CENTER: Search ── */}
-        <div style={{ position: "relative", width: "320px" }}>
-          <input
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              if (!searchOpen) setSearchOpen(true);
-            }}
-            onFocus={(e) => {
-              setSearchOpen(true);
-              (e.target as HTMLElement).style.borderColor =
-                "rgba(250,204,21,0.5)";
-            }}
-            onBlur={(e) => {
-              (e.target as HTMLElement).style.borderColor =
-                "rgba(255,255,255,0.1)";
-            }}
-            placeholder={t.nav.search}
-            style={{
-              width: "100%",
-              background: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "8px",
-              padding: "7px 36px 7px 12px",
-              color: "#e2e8f0",
-              fontSize: "13px",
-              outline: "none",
-              boxSizing: "border-box",
-              transition: "border-color 0.15s",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              right: "10px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              color: "#64748b",
-              display: "flex",
-              alignItems: "center",
-              pointerEvents: "none",
-            }}
-          >
-            <SearchIcon />
+        {SHARE_ENABLED ? (
+          <div style={{ position: "relative", width: "320px" }}>
+            <input
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (!searchOpen) setSearchOpen(true);
+              }}
+              onFocus={(e) => {
+                setSearchOpen(true);
+                (e.target as HTMLElement).style.borderColor =
+                  "rgba(250,204,21,0.5)";
+              }}
+              onBlur={(e) => {
+                (e.target as HTMLElement).style.borderColor =
+                  "rgba(255,255,255,0.1)";
+              }}
+              placeholder={t.nav.search}
+              style={{
+                width: "100%",
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "8px",
+                padding: "7px 36px 7px 12px",
+                color: "#e2e8f0",
+                fontSize: "13px",
+                outline: "none",
+                boxSizing: "border-box",
+                transition: "border-color 0.15s",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                right: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "#64748b",
+                display: "flex",
+                alignItems: "center",
+                pointerEvents: "none",
+              }}
+            >
+              <SearchIcon />
+            </div>
+            <SearchDropdown
+              query={searchQuery}
+              open={searchOpen}
+              onClose={() => {
+                setSearchOpen(false);
+                setSearchQuery("");
+              }}
+            />
           </div>
-          <SearchDropdown
-            query={searchQuery}
-            open={searchOpen}
-            onClose={() => {
-              setSearchOpen(false);
-              setSearchQuery("");
-            }}
-          />
-        </div>
+        ) : (
+          <div />
+        )}
 
         {/* ── RIGHT: Lang switcher + Auth ── */}
         <div
@@ -447,16 +460,20 @@ export function Navbar() {
                   }}
                 >
                   {[
-                    {
-                      label: t.nav.profile,
-                      href: `/profile/${user.username}`,
-                    },
-                    {
-                      label: t.nav.myTunes,
-                      href: `/profile/${user.username}?tab=tunes`,
-                    },
+                    ...(SHARE_ENABLED
+                      ? [
+                          {
+                            label: t.nav.profile,
+                            href: `/profile/${user.username}`,
+                          },
+                          {
+                            label: t.nav.myTunes,
+                            href: `/profile/${user.username}?tab=tunes`,
+                          },
+                        ]
+                      : []),
                     // Saved Tunes is a premium-gated feature — hide while premium is held
-                    ...(PREMIUM_ENABLED
+                    ...(SHARE_ENABLED && PREMIUM_ENABLED
                       ? [
                           {
                             label: t.nav.savedTunes,
@@ -518,7 +535,7 @@ export function Navbar() {
                 </div>
               )}
             </div>
-          ) : (
+          ) : !SHARE_ENABLED ? null : (
             /* Guest buttons */
             <>
               <Link
