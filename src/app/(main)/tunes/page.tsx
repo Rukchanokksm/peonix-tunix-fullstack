@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback, Fragment, Suspense } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AdUnit } from "@/components/ads/AdUnit";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+
+const STORAGE_BASE = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/image-games`;
 
 // ─── Game config ────────────────────────────────────────────────────────────
 
@@ -399,9 +402,38 @@ function TuneCardRow({ tune }: { tune: TuneRow }) {
 
 // ─── Game Picker ─────────────────────────────────────────────────────────────
 
+const GAME_GRADIENT: Record<string, string> = {
+  "forza-horizon-5": "linear-gradient(135deg,#1e3a5f,#0f2040,#0d0f1e)",
+  "forza-horizon-6": "linear-gradient(135deg,#2a1f3a,#1a0f2a,#0d0f1e)",
+  "the-crew-motorfest": "linear-gradient(135deg,#3a2a0f,#2a1a0a,#1a1208)",
+  "nfs-unbound": "linear-gradient(135deg,#2a0f0f,#1a0808,#150a0a)",
+};
+
 function GamePicker({ onSelect }: { onSelect: (slug: string) => void }) {
   const { t } = useLanguage();
   const T = t.tunes;
+  const [covers, setCovers] = useState<Record<string, string | null>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/games")
+      .then((r) => r.json())
+      .then(
+        (json: { games?: { slug: string; cover_url: string | null }[] }) => {
+          if (cancelled) return;
+          const map: Record<string, string | null> = {};
+          for (const g of json.games ?? []) {
+            map[g.slug] = g.cover_url ? `${STORAGE_BASE}/${g.cover_url}` : null;
+          }
+          setCovers(map);
+        },
+      )
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <div
       style={{
@@ -429,105 +461,145 @@ function GamePicker({ onSelect }: { onSelect: (slug: string) => void }) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))",
+          gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))",
           gap: "16px",
         }}
       >
-        {GAME_OPTS.map((game) => (
-          <button
-            key={game.slug}
-            onClick={() => game.active && onSelect(game.slug)}
-            style={{
-              background: "#13151c",
-              border: `1px solid ${game.active ? game.accent + "44" : "rgba(255,255,255,0.06)"}`,
-              borderRadius: "14px",
-              padding: "28px 20px",
-              cursor: game.active ? "pointer" : "default",
-              textAlign: "left",
-              transition: "all 0.15s",
-              opacity: game.active ? 1 : 0.5,
-            }}
-            onMouseEnter={(e) => {
-              if (game.active)
-                (e.currentTarget as HTMLElement).style.borderColor =
-                  game.accent + "99";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = game.active
-                ? game.accent + "44"
-                : "rgba(255,255,255,0.06)";
-            }}
-          >
-            <div
+        {GAME_OPTS.map((game) => {
+          const cover = covers[game.slug] ?? null;
+          const gradient =
+            GAME_GRADIENT[game.slug] ??
+            "linear-gradient(135deg,#1e293b,#0f172a)";
+          return (
+            <button
+              key={game.slug}
+              onClick={() => game.active && onSelect(game.slug)}
               style={{
-                display: "inline-block",
-                fontSize: "11px",
-                fontWeight: 800,
-                letterSpacing: "0.1em",
-                padding: "3px 10px",
-                borderRadius: "6px",
-                background: game.accent + "22",
-                color: game.accent,
-                border: `1px solid ${game.accent}44`,
-                marginBottom: "14px",
+                background: "#13151c",
+                border: `1px solid ${game.active ? game.accent + "44" : "rgba(255,255,255,0.06)"}`,
+                borderRadius: "14px",
+                padding: 0,
+                cursor: game.active ? "pointer" : "default",
+                textAlign: "left",
+                transition: "all 0.15s",
+                opacity: game.active ? 1 : 0.5,
+                overflow: "hidden",
+              }}
+              onMouseEnter={(e) => {
+                if (game.active)
+                  (e.currentTarget as HTMLElement).style.borderColor =
+                    game.accent + "99";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.borderColor = game.active
+                  ? game.accent + "44"
+                  : "rgba(255,255,255,0.06)";
               }}
             >
-              {game.short}
-            </div>
-
-            <div
-              style={{
-                fontSize: "16px",
-                fontWeight: 800,
-                color: "#f1f5f9",
-                marginBottom: "6px",
-                lineHeight: 1.3,
-              }}
-            >
-              {game.name}
-            </div>
-
-            {game.note && (
+              {/* Cover banner */}
               <div
                 style={{
-                  fontSize: "11px",
-                  color: "#475569",
-                  marginBottom: "8px",
+                  position: "relative",
+                  width: "100%",
+                  aspectRatio: "16 / 9",
+                  background: gradient,
+                  overflow: "hidden",
                 }}
               >
-                {game.note}
+                {cover && (
+                  <Image
+                    src={cover}
+                    alt={game.name}
+                    fill
+                    sizes="(max-width: 600px) 100vw, 280px"
+                    style={{ objectFit: "cover", opacity: 0.85 }}
+                  />
+                )}
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background:
+                      "linear-gradient(to top, rgba(19,21,28,0.95) 0%, rgba(19,21,28,0.25) 55%, transparent 100%)",
+                  }}
+                />
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "10px",
+                    left: "12px",
+                    fontSize: "11px",
+                    fontWeight: 800,
+                    letterSpacing: "0.1em",
+                    padding: "3px 10px",
+                    borderRadius: "6px",
+                    background: "rgba(13,15,20,0.7)",
+                    color: game.accent,
+                    border: `1px solid ${game.accent}44`,
+                    backdropFilter: "blur(4px)",
+                  }}
+                >
+                  {game.short}
+                </span>
               </div>
-            )}
 
-            {!game.active && (
-              <div
-                style={{
-                  display: "inline-block",
-                  fontSize: "10px",
-                  fontWeight: 700,
-                  padding: "2px 8px",
-                  borderRadius: "4px",
-                  background: "rgba(250,204,21,0.1)",
-                  color: "#facc15",
-                  border: "1px solid rgba(250,204,21,0.2)",
-                }}
-              >
-                {T.comingSoon}
+              {/* Body */}
+              <div style={{ padding: "16px 18px 18px" }}>
+                <div
+                  style={{
+                    fontSize: "16px",
+                    fontWeight: 800,
+                    color: "#f1f5f9",
+                    marginBottom: "6px",
+                    lineHeight: 1.3,
+                  }}
+                >
+                  {game.name}
+                </div>
+
+                {game.note && (
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      color: "#475569",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    {game.note}
+                  </div>
+                )}
+
+                {!game.active && (
+                  <div
+                    style={{
+                      display: "inline-block",
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      padding: "2px 8px",
+                      borderRadius: "4px",
+                      background: "rgba(250,204,21,0.1)",
+                      color: "#facc15",
+                      border: "1px solid rgba(250,204,21,0.2)",
+                    }}
+                  >
+                    {T.comingSoon}
+                  </div>
+                )}
+                {game.active && (
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      color: game.accent,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {T.browseCta}
+                  </div>
+                )}
               </div>
-            )}
-            {game.active && (
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: game.accent,
-                  fontWeight: 600,
-                }}
-              >
-                {T.browseCta}
-              </div>
-            )}
-          </button>
-        ))}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

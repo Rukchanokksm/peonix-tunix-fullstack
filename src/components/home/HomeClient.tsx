@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { timeAgo } from "@/lib/i18n/timeAgo";
@@ -13,11 +14,16 @@ export interface LatestContentPost {
   source: "blog" | "guideline";
 }
 
-interface Props {
-  latestPosts: LatestContentPost[];
+export interface GameCover {
+  url: string | null;
 }
 
-export function HomeClient({ latestPosts }: Props) {
+interface Props {
+  latestPosts: LatestContentPost[];
+  gameCovers: Record<"fh5" | "fh6", GameCover>;
+}
+
+export function HomeClient({ latestPosts, gameCovers }: Props) {
   const { t, locale } = useLanguage();
   const h = t.home;
 
@@ -176,6 +182,7 @@ export function HomeClient({ latestPosts }: Props) {
               accent: "#c084fc",
               version: "v2.0",
               tagline: h.landingFh6Tagline,
+              coverUrl: gameCovers.fh6.url,
             },
             {
               game: "fh5" as const,
@@ -185,6 +192,7 @@ export function HomeClient({ latestPosts }: Props) {
               accent: "#60a5fa",
               version: "v1.0",
               tagline: h.landingFh5Tagline,
+              coverUrl: gameCovers.fh5.url,
             },
           ].map((card) => (
             <Link
@@ -196,7 +204,6 @@ export function HomeClient({ latestPosts }: Props) {
                 borderRadius: "14px",
                 border: `1px solid ${card.accent}44`,
                 background: card.gradient,
-                padding: "26px 24px",
                 textDecoration: "none",
                 color: "#f1f5f9",
                 overflow: "hidden",
@@ -213,67 +220,101 @@ export function HomeClient({ latestPosts }: Props) {
                 el.style.boxShadow = "none";
               }}
             >
+              {/* Cover banner */}
               <div
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: "10px",
+                  position: "relative",
+                  width: "100%",
+                  aspectRatio: "16 / 9",
+                  background: card.gradient,
+                  overflow: "hidden",
                 }}
               >
+                {card.coverUrl && (
+                  <Image
+                    src={card.coverUrl}
+                    alt={card.title}
+                    fill
+                    sizes="(max-width: 600px) 100vw, 360px"
+                    style={{ objectFit: "cover", opacity: 0.85 }}
+                  />
+                )}
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background:
+                      "linear-gradient(to top, rgba(13,15,20,0.95) 0%, rgba(13,15,20,0.2) 55%, transparent 100%)",
+                  }}
+                />
                 <span
                   style={{
+                    position: "absolute",
+                    top: "10px",
+                    left: "12px",
                     fontSize: "11px",
                     fontWeight: 800,
                     letterSpacing: "0.14em",
                     color: card.accent,
-                    background: `${card.accent}22`,
+                    background: "rgba(13,15,20,0.7)",
                     border: `1px solid ${card.accent}55`,
                     padding: "3px 9px",
                     borderRadius: "5px",
+                    backdropFilter: "blur(4px)",
                   }}
                 >
                   {card.short}
                 </span>
                 <span
                   style={{
+                    position: "absolute",
+                    top: "10px",
+                    right: "12px",
                     fontSize: "10px",
-                    color: "#94a3b8",
+                    color: "#cbd5e1",
                     fontFamily: "monospace",
+                    background: "rgba(13,15,20,0.7)",
+                    padding: "3px 7px",
+                    borderRadius: "4px",
+                    backdropFilter: "blur(4px)",
                   }}
                 >
                   Engine {card.version}
                 </span>
               </div>
-              <h3
-                style={{
-                  fontSize: "20px",
-                  fontWeight: 800,
-                  margin: "0 0 6px",
-                  color: "#f1f5f9",
-                }}
-              >
-                {card.title}
-              </h3>
-              <p
-                style={{
-                  margin: "0 0 16px",
-                  fontSize: "13px",
-                  color: "#94a3b8",
-                  lineHeight: 1.5,
-                }}
-              >
-                {card.tagline}
-              </p>
-              <span
-                style={{
-                  fontSize: "13px",
-                  fontWeight: 700,
-                  color: card.accent,
-                }}
-              >
-                {h.landingCtaCalculate}
-              </span>
+
+              {/* Body */}
+              <div style={{ padding: "20px 22px 22px" }}>
+                <h3
+                  style={{
+                    fontSize: "20px",
+                    fontWeight: 800,
+                    margin: "0 0 6px",
+                    color: "#f1f5f9",
+                  }}
+                >
+                  {card.title}
+                </h3>
+                <p
+                  style={{
+                    margin: "0 0 16px",
+                    fontSize: "13px",
+                    color: "#94a3b8",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {card.tagline}
+                </p>
+                <span
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    color: card.accent,
+                  }}
+                >
+                  {h.landingCtaCalculate}
+                </span>
+              </div>
             </Link>
           ))}
         </div>

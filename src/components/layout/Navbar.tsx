@@ -13,12 +13,10 @@ import { LanguageSwitcher } from "./LanguageSwitcher";
 import tunixLogo from "@/app/tunix_wall.png";
 import type { UserProfile } from "@/types";
 
-// ─── Games list ─────────────────────────────────────────────────────────────
-const GAMES = [
-  { name: "Forza Horizon 5", slug: "forza-horizon-5", active: true },
-  { name: "Forza Horizon 6", slug: "forza-horizon-6", active: true },
-  { name: "The Crew Motorfest", slug: "the-crew-motorfest", active: true },
-  { name: "NFS Unbound", slug: "nfs-unbound", active: true },
+// ─── Tune Tool games (calculator dispatch) ─────────────────────────────────
+const TUNE_TOOL_GAMES = [
+  { name: "Forza Horizon 6", game: "fh6" },
+  { name: "Forza Horizon 5", game: "fh5" },
 ];
 
 // ─── Icons ──────────────────────────────────────────────────────────────────
@@ -88,10 +86,10 @@ export function Navbar() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const [gamesOpen, setGamesOpen] = useState(false);
+  const [tuneToolOpen, setTuneToolOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
-  const gamesRef = useRef<HTMLDivElement>(null);
+  const tuneToolRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   // ── Auth state ──────────────────────────────────────────────────────────
@@ -117,8 +115,11 @@ export function Navbar() {
   // ── Close dropdowns on outside click ───────────────────────────────────
   useEffect(() => {
     const handle = (e: MouseEvent) => {
-      if (gamesRef.current && !gamesRef.current.contains(e.target as Node))
-        setGamesOpen(false);
+      if (
+        tuneToolRef.current &&
+        !tuneToolRef.current.contains(e.target as Node)
+      )
+        setTuneToolOpen(false);
       if (
         userMenuRef.current &&
         !userMenuRef.current.contains(e.target as Node)
@@ -197,91 +198,66 @@ export function Navbar() {
               {t.nav.home}
             </Link>
 
-            <Link href="/calculator" style={navLinkStyle}>
-              {t.nav.calculator}
-            </Link>
+            {/* Tune Tool dropdown — pick a game then go to calculator */}
+            <div ref={tuneToolRef} style={{ position: "relative" }}>
+              <button
+                onClick={() => setTuneToolOpen((o) => !o)}
+                style={{
+                  ...navLinkStyle,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                {t.nav.tuneTool} <ChevronIcon open={tuneToolOpen} />
+              </button>
 
-            {/* Games dropdown */}
-            {SHARE_ENABLED && (
-              <div ref={gamesRef} style={{ position: "relative" }}>
-                <button
-                  onClick={() => setGamesOpen((o) => !o)}
+              {tuneToolOpen && (
+                <div
                   style={{
-                    ...navLinkStyle,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
+                    position: "absolute",
+                    top: "calc(100% + 8px)",
+                    left: 0,
+                    background: "#161820",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    borderRadius: "10px",
+                    padding: "6px",
+                    minWidth: "210px",
+                    boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
                   }}
                 >
-                  {t.nav.games} <ChevronIcon open={gamesOpen} />
-                </button>
-
-                {gamesOpen && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "calc(100% + 8px)",
-                      left: 0,
-                      background: "#161820",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                      borderRadius: "10px",
-                      padding: "6px",
-                      minWidth: "210px",
-                      boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
-                    }}
-                  >
-                    {GAMES.map((g) => (
-                      <Link
-                        key={g.slug}
-                        href={g.active ? `/games/${g.slug}` : "#"}
-                        onClick={() => setGamesOpen(false)}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          padding: "8px 12px",
-                          borderRadius: "6px",
-                          textDecoration: "none",
-                          color: g.active ? "#e2e8f0" : "#64748b",
-                          fontSize: "13.5px",
-                          transition: "background 0.1s",
-                          cursor: g.active ? "pointer" : "default",
-                        }}
-                        onMouseEnter={(e) => {
-                          if (g.active)
-                            (e.currentTarget as HTMLElement).style.background =
-                              "rgba(255,255,255,0.06)";
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLElement).style.background =
-                            "transparent";
-                        }}
-                      >
-                        {g.name}
-                        {!g.active && (
-                          <span
-                            style={{
-                              fontSize: "10px",
-                              fontWeight: 600,
-                              padding: "2px 6px",
-                              borderRadius: "4px",
-                              background: "rgba(250,204,21,0.15)",
-                              color: "#facc15",
-                              letterSpacing: "0.3px",
-                            }}
-                          >
-                            {t.nav.soon}
-                          </span>
-                        )}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+                  {TUNE_TOOL_GAMES.map((g) => (
+                    <Link
+                      key={g.game}
+                      href={`/calculator?game=${g.game}`}
+                      onClick={() => setTuneToolOpen(false)}
+                      style={{
+                        display: "block",
+                        padding: "8px 12px",
+                        borderRadius: "6px",
+                        textDecoration: "none",
+                        color: "#e2e8f0",
+                        fontSize: "13.5px",
+                        transition: "background 0.1s",
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLElement).style.background =
+                          "rgba(255,255,255,0.06)";
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLElement).style.background =
+                          "transparent";
+                      }}
+                    >
+                      {g.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {SHARE_ENABLED && (
               <Link href="/forums" style={navLinkStyle}>

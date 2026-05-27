@@ -7,10 +7,9 @@ export const LOCALES: Locale[] = ["en", "th"];
 type Schema = {
   nav: Record<
     | "home"
-    | "games"
     | "forums"
     | "tunes"
-    | "calculator"
+    | "tuneTool"
     | "guideline"
     | "blog"
     | "search"
@@ -603,10 +602,9 @@ export const MESSAGES: Record<Locale, Schema> = {
     // ─── Navbar ───────────────────────────────────────────────────────────
     nav: {
       home: "Home",
-      games: "Games",
       forums: "Forums",
       tunes: "Tunes",
-      calculator: "Calculator",
+      tuneTool: "Tune Tool",
       guideline: "Guideline",
       blog: "Blog",
       search: "Search tunes, cars, or tuners...",
@@ -1225,10 +1223,9 @@ export const MESSAGES: Record<Locale, Schema> = {
   th: {
     nav: {
       home: "หน้าแรก",
-      games: "เกม",
       forums: "ฟอรั่ม",
       tunes: "Tune",
-      calculator: "เครื่องคำนวณ",
+      tuneTool: "เครื่องมือ tune",
       guideline: "คู่มือ",
       blog: "บล็อก",
       search: "ค้นหา tune, รถ, หรือ tuner...",
